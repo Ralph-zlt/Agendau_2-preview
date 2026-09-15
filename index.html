@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- ==========================================================
+         DAYVET-GESTÃO — Estrutura do Projeto
+         ==========================================================
+         Este é o arquivo principal (SPA monolítica separada em 3 arquivos).
+         ONDE MEXER:
+           • <head>         → Meta-tags, CDN (Tailwind, Lucide, Chart.js), config Tailwind
+           • #login-screen  → Tela de login (neon futurista)
+           • #app-container → Toda a aplicação (header, nav, tabs, modais)
+• CSS            → styles.css (importado via <link>)
+            • JS             → script.js   (importado via <script> no final do <body>)
+         ========================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DayVet-Gestão | Sistema Integrado para Pet Shop e Clínica Veterinária</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-dark': '#03001e',
+                        'brand-card': '#0a0029',
+                        'brand-lime': '#ccff00',
+                        'brand-pink': '#ff007f',
+                        'brand-blue': '#0066ff',
+                        'brand-purple': '#8b00ff',
+                        'brand-yellow': '#ffcc00',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Estilos do projeto -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Aplicação antecipada do tema para evitar flash -->
+    <script>
+        (function() {
+            var tema = localStorage.getItem('dayvet-tema');
+            if (!tema) {
+                tema = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+            }
+            document.documentElement.setAttribute('data-theme', tema);
+        })();
+    </script>
+</head>
+<body class="flex flex-col min-h-screen custom-scrollbar antialiased selection:bg-brand-purple selection:text-white">
+
+    <!-- Toast Container (notificações) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-md pointer-events-none"></div>
+
+    <!-- ===================== TELA DE LOGIN (SISTEMA DE ACESSO FUTURISTA) ===================== -->
+    <div id="login-screen" class="fixed inset-0 bg-brand-dark/90 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-brand-blue/30 flex flex-col neon-border-blue-login">
+            <!-- Header do Login -->
+            <div class="p-8 bg-gradient-to-br from-brand-dark via-slate-900 to-brand-purple text-white text-center relative border-b border-brand-purple/20">
+                <!-- Botão tema no login — canto superior direito
+                     Usa a mesma função alternarTema() do header principal.
+                     z-[61] para ficar acima do login-screen (z-50) sem conflito com modais (z-[60]). -->
+                <button onclick="alternarTema()" id="btn-tema-login"
+                    title="Alternar tema claro/escuro"
+                    class="absolute top-3 right-3 w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white/70 hover:text-white transition-all z-[61]">
+                    <i data-lucide="sun" class="w-4 h-4" id="icone-tema-login"></i>
+                </button>
+                <div class="mx-auto bg-brand-lime text-slate-950 p-3.5 rounded-2xl font-black text-2xl flex items-center justify-center shadow-lg shadow-brand-lime/20 w-14 h-14 mb-3">
+                    <i data-lucide="paw-print" class="w-8 h-8"></i>
+                </div>
+                <h1 class="font-extrabold text-3xl tracking-tight text-white">DayVet-<span class="text-brand-lime neon-text-lime-login">Gestão</span></h1>
+                <p class="text-[10px] text-brand-pink mt-1 font-bold uppercase tracking-widest neon-text-pink-login">Sistema Integrado para Pet Shop e Clínica Veterinária</p>
+            </div>
+
+            <!-- Corpo de Formulário -->
+            <div class="p-8 space-y-6">
+                <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">CPF ou E-mail</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                            </span>
+                            <input type="text" id="login-cpf" placeholder="CPF ou email@dominio.com" required class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Bloco de senha -->
+                    <div id="password-group">
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Senha</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+                            </span>
+                            <input type="password" id="login-password" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-2 leading-snug italic" id="login-hint">Usuarios de teste — CPF 1, 2 ou 3 com senha correspondente</p>
+                    </div>
+
+                    <!-- Botão de Login -->
+                    <button type="submit" class="w-full bg-brand-blue hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-brand-blue/30 flex items-center justify-center gap-2">
+                        <span>Acessar o Painel</span> <i data-lucide="arrow-right" class="w-4 h-4 text-brand-lime"></i>
+                    </button>
+
+                </form>
+                <!-- Link Esqueci a Senha — fora do <form> para não ser bloqueado pela validação
+                     nativa do browser nos campos required (login-cpf / login-password).
+                     Hover via onmouseover/out inline — Tailwind CDN sobrescreve classes CSS customizadas. -->
+                <div class="text-center mt-3">
+                    <button id="btn-esqueci-senha" type="button" onclick="abrirModalRecuperarSenha()"
+                        onmouseover="this.style.setProperty('color','#8b00ff','important')"
+                        onmouseout="this.style.removeProperty('color')"
+                        class="text-[11px] text-slate-400 transition-colors font-semibold">
+                        Esqueci a senha?
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== APLICAÇÃO PRINCIPAL ===================== -->
+    <div id="app-container" class="flex-1 flex flex-col">
+        <!-- Topbar / Header -->
+        <header class="no-print bg-slate-950/80 border-b border-slate-850 backdrop-blur-md sticky top-0 z-40 px-4 md:px-8 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center justify-between md:justify-start gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-blue to-brand-purple flex items-center justify-center shadow-md">
+                        <i data-lucide="paw-print" class="w-5 h-5 text-brand-lime"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-black text-lg text-white leading-none tracking-wide">DAYVET<span class="text-brand-lime neon-text-lime">-GESTÃO</span></h1>
+                        <span id="page-title" class="text-[11px] font-bold text-slate-400">Dashboards & Finanças</span>
+                    </div>
+                </div>
+
+                <!-- Indicador de Restrição Horária -->
+                <div id="horario-restricao-control" class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-xl">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-brand-lime"></span>
+                        <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-lime"></span>
+                    </span>
+                    <span class="text-xs font-semibold text-slate-300 hidden sm:inline">Restrição:</span>
+                    <select id="config-horario" onchange="alterarRestricaoHoraria()" class="bg-transparent text-xs font-bold text-brand-lime focus:outline-none cursor-pointer">
+                        <option value="comercial" class="bg-slate-900 text-white">Comercial (08h-18h)</option>
+                        <option value="livre" class="bg-slate-900 text-white">Livre (24 horas)</option>
+                    </select>
+                    <button onclick="abrirModalHorarioFuncionamento()" class="text-slate-400 hover:text-brand-lime ml-1" title="Alterar Horário de Funcionamento">
+                        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Perfil do Usuário e Logout -->
+            <div class="flex items-center justify-between md:justify-end gap-4">
+                <div class="flex items-center gap-3 bg-slate-900/80 border border-slate-800 px-3.5 py-1.5 rounded-2xl">
+                    <div class="w-8 h-8 rounded-full bg-brand-purple/30 border border-brand-purple flex items-center justify-center font-bold text-xs text-brand-lime" id="user-avatar">
+                        AD
+                    </div>
+                    <div class="text-left">
+                        <div id="header-user-name" class="text-xs font-extrabold text-slate-100">Dr. Douglas Ferreira</div>
+                        <div id="header-user-role" class="text-[10px] text-slate-400 font-semibold">Profissão: Veterinário</div>
+                    </div>
+                    <span id="current-user-role-label" class="text-[10px] font-bold bg-brand-blue/20 text-brand-blue border border-brand-blue/30 px-2 py-0.5 rounded-full uppercase ml-1">Admin</span>
+                </div>
+
+                <button onclick="alternarTema()" id="btn-tema" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-slate-400 hover:text-brand-yellow transition-all" title="Alternar tema">
+                    <i data-lucide="sun" class="w-4 h-4"></i>
+                </button>
+                <button onclick="handleLogout()" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-slate-400 hover:text-brand-pink transition-all" title="Sair do Sistema">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navegação por Tabs -->
+        <nav class="no-print bg-slate-950/60 border-b border-slate-850 px-4 md:px-8 py-2 overflow-x-auto custom-scrollbar">
+            <div class="flex items-center gap-1 min-w-max">
+                <button id="nav-dashboard" onclick="switchTab('dashboard')" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all bg-slate-900 text-white">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-brand-blue"></i>
+                    <span>Dashboard & KPIs</span>
+                </button>
+                <button id="nav-agendamentos" onclick="switchTab('agendamentos')" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i data-lucide="calendar" class="w-4 h-4 text-brand-pink"></i>
+                    <span>Agendamentos</span>
+                </button>
+                <button id="nav-clientes" onclick="switchTab('clientes')" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i data-lucide="users" class="w-4 h-4 text-brand-lime"></i>
+                    <span>Tutores & Pets</span>
+                </button>
+                <button id="nav-clinica" onclick="switchTab('clinica')" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i data-lucide="stethoscope" class="w-4 h-4 text-brand-yellow"></i>
+                    <span>Módulo Clínico</span>
+                </button>
+                <button id="nav-relatorios" onclick="switchTab('relatorios')" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i data-lucide="bar-chart-4" class="w-4 h-4 text-brand-purple"></i>
+                    <span>Relatórios</span>
+                </button>
+                <button id="nav-usuarios" onclick="switchTab('usuarios')" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+                    <span>Usuários & Permissões</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+
+            <!-- TAB 1: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-content space-y-6">
+                <!-- Filtros & Banner -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 p-6 rounded-3xl border border-slate-850 shadow-xl">
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-black text-white flex items-center gap-2">
+                            <span>Resumo Financeiro e Operacional</span>
+                            <span class="text-xs font-bold bg-brand-lime/10 text-brand-lime border border-brand-lime/20 px-2.5 py-0.5 rounded-full">Ao Vivo</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">Acompanhamento consolidado de vendas, atendimentos e fluxo de clínica.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="btn-gerar-relatorios-dashboard" onclick="abrirModalGerarRelatorios()" class="px-4 py-2.5 bg-gradient-to-r from-brand-purple to-brand-blue hover:opacity-90 font-bold text-xs text-white rounded-xl shadow-md flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span>Gerar Relatórios</span>
+                        </button>
+                        <select id="periodo-faturamento" onchange="atualizarPeriodoFaturamento()" class="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-4 py-2.5 rounded-xl focus:outline-none">
+                            <option value="mensal">Período: Mensal (Maio 2026)</option>
+                            <option value="semanal">Período: Semanal</option>
+                            <option value="anual">Período: Anual (2026)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- PAINEL DO VETERINÁRIO (Fase 5): visível só p/ role veterinario — ver atualizarDashboardPorPerfil() -->
+                <div id="painel-vet-hoje" class="hidden space-y-4">
+                    <div class="bg-slate-950 p-6 rounded-3xl border border-slate-850 shadow-xl space-y-1">
+                        <h3 class="text-xl font-black text-white flex items-center gap-2">
+                            <span>Meus agendamentos de hoje</span>
+                            <span class="text-xs font-bold bg-brand-lime/10 text-brand-lime border border-brand-lime/20 px-2.5 py-0.5 rounded-full">Ao Vivo</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">Hora · pet · tutor · serviço · status do dia atual.</p>
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <span id="vet-hoje-total" class="text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1.5 rounded-xl">0 atendimentos</span>
+                            <span id="vet-hoje-confirmados" class="text-xs font-bold bg-brand-lime/10 border border-brand-lime/20 text-brand-lime px-3 py-1.5 rounded-xl">0 confirmados</span>
+                            <span id="vet-hoje-pendentes" class="text-xs font-bold bg-brand-yellow/10 border border-brand-yellow/20 text-brand-yellow px-3 py-1.5 rounded-xl">0 pendentes</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
+                        <div id="lista-vet-hoje" class="divide-y divide-slate-800/50"></div>
+                    </div>
+                </div>
+
+                <!-- PAINEL FINANCEIRO (admin/funcionário) -->
+                <div id="painel-financeiro" class="space-y-6">
+                <!-- KPIs Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div id="card-faturamento" class="bg-slate-950 p-5 rounded-2xl border border-slate-850 space-y-2 relative overflow-hidden">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-bold uppercase tracking-wider">Faturamento Total</span>
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-brand-lime"></i>
+                        </div>
+                        <div id="kpi-faturamento" class="text-2xl font-black text-white">R$ 12.850,00</div>
+                        <span class="text-[11px] text-brand-lime font-bold flex items-center gap-1">
+                            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +18.4% vs mês anterior
+                        </span>
+                    </div>
+
+                    <div id="card-agendamentos" class="bg-slate-950 p-5 rounded-2xl border border-slate-850 space-y-2 relative overflow-hidden">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-bold uppercase tracking-wider">Agendamentos</span>
+                            <i data-lucide="calendar" class="w-5 h-5 text-brand-pink"></i>
+                        </div>
+                        <div id="kpi-agendamentos-count" class="text-2xl font-black text-white">24 Atendimentos</div>
+                        <span class="text-[11px] text-brand-pink font-bold flex items-center gap-1">
+                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> 88% taxa de confirmação
+                        </span>
+                    </div>
+
+                    <div id="card-pacientes" class="bg-slate-950 p-5 rounded-2xl border border-slate-850 space-y-2 relative overflow-hidden">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span class="text-xs font-bold uppercase tracking-wider">Pacientes Ativos</span>
+                            <i data-lucide="paw-print" class="w-5 h-5 text-brand-blue"></i>
+                        </div>
+                        <div id="kpi-pacientes-count" class="text-2xl font-black text-white">18 Pets</div>
+                        <span class="text-[11px] text-brand-blue font-bold flex items-center gap-1">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i> 12 Tutores Cadastrados
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- Gráficos -->
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                                <i data-lucide="line-chart" class="w-4 h-4 text-brand-blue"></i>
+                                <span>Evolução da Receita (R$)</span>
+                            </h4>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="financeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: AGENDAMENTOS -->
+            <section id="tab-agendamentos" class="tab-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 p-6 rounded-3xl border border-slate-850">
+                    <div>
+                        <h3 class="text-xl font-black text-white">Controle de Agendamentos & Consultas</h3>
+                        <p id="agenda-subtitle" class="text-xs text-slate-400">Solicitação, agendamento, reagendamento, cancelamento e registro de valores.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <button id="btn-solicitar-vacinacao" onclick="abrirModalSolicitarAgendamento('Vacinação')" class="px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 hover:text-white font-bold text-xs rounded-xl flex items-center gap-1.5">
+                            <i data-lucide="syringe" class="w-4 h-4 text-brand-lime"></i>
+                            <span>Solicitar Vacinação</span>
+                        </button>
+                        <button id="btn-agendar-consulta" onclick="abrirModalAgendamento()" class="px-5 py-2.5 bg-gradient-to-r from-brand-blue to-brand-purple hover:opacity-90 font-bold text-xs text-white rounded-xl shadow-lg flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            <span>Agendar Consulta</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros por Status -->
+                <div class="flex items-center justify-between gap-2 overflow-x-auto pb-2">
+                    <div class="flex items-center gap-2">
+                        <button id="filter-all" onclick="filtrarAgendamentos('todos')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white border border-slate-700">Todos</button>
+                        <button id="filter-pendente" onclick="filtrarAgendamentos('pendente')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white">Pendentes</button>
+                        <button id="filter-confirmado" onclick="filtrarAgendamentos('confirmado')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white">Confirmados</button>
+                        <button id="filter-cancelado" onclick="filtrarAgendamentos('cancelado')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white">Cancelados</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="filtro-data-ag" onchange="filtrarAgendamentosData(this.value)" class="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3 py-2 rounded-xl focus:outline-none" title="Filtrar por período">
+                            <option value="todos">Período: Todos os dias</option>
+                            <option value="hoje">Período: Hoje</option>
+                            <option value="proximos7">Período: Hoje e futuros</option>
+                            <option value="passados">Período: Passados</option>
+                        </select>
+                        <span id="agendamento-counter" class="text-xs text-slate-400 font-bold">Exibindo 4 compromissos</span>
+                    </div>
+                </div>
+
+                <!-- Tabela de Agendamentos -->
+                <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider font-extrabold border-b border-slate-800">
+                                <tr>
+                                    <th class="py-4 px-6">Paciente & Tutor</th>
+                                    <th class="py-4 px-6">Serviço Solicitado</th>
+                                    <th class="py-4 px-6">Data & Horário</th>
+                                    <th class="py-4 px-6">Valor Registrado</th>
+                                    <th class="py-4 px-6">Status</th>
+                                    <th class="py-4 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agendamentos-table-body" class="divide-y divide-slate-850">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: TUTORES & PETS -->
+            <section id="tab-clientes" class="tab-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 p-6 rounded-3xl border border-slate-850">
+                    <div>
+                        <h3 class="text-xl font-black text-white">Tutores & Pets Cadastrados</h3>
+                        <p class="text-xs text-slate-400">Gerenciamento completo de clientes, contatos e perfil comportamental dos animais.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="btn-novo-tutor" onclick="abrirModalTutor()" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-xs font-bold text-white rounded-xl flex items-center gap-2">
+                            <i data-lucide="user-plus" class="w-4 h-4 text-brand-blue"></i>
+                            <span>Novo Tutor</span>
+                        </button>
+                        <button id="btn-novo-pet" onclick="abrirModalPet()" class="px-4 py-2.5 bg-gradient-to-r from-brand-lime/20 to-brand-lime/40 border border-brand-lime/50 text-brand-lime hover:opacity-90 text-xs font-bold rounded-xl flex items-center gap-2">
+                            <i data-lucide="paw-print" class="w-4 h-4"></i>
+                            <span>Novo Pet</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="tutores-grid" class="grid grid-cols-1 gap-6">
+                    <!-- Preenchido dinamicamente via JS -->
+                </div>
+            </section>
+
+            <!-- TAB 4: MÓDULO CLÍNICO -->
+            <section id="tab-clinica" class="tab-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 p-6 rounded-3xl border border-slate-850">
+                    <div>
+                        <h3 class="text-xl font-black text-white">Atendimento Clínico & Documentos Médicos</h3>
+                        <p class="text-xs text-slate-400">Gestão completa de Prescrições, Laudos Diagnósticos e Guias de Encaminhamento.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="prepararNovoDocumentoClinico('receita')" class="btn-incluir-doc-clinico px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-brand-lime text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5">
+                            <i data-lucide="file-plus" class="w-4 h-4 text-brand-lime"></i>
+                            <span>Incluir Receita</span>
+                        </button>
+                        <button onclick="prepararNovoDocumentoClinico('laudo')" class="btn-incluir-doc-clinico px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-brand-blue text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5">
+                            <i data-lucide="file-search" class="w-4 h-4 text-brand-blue"></i>
+                            <span>Incluir Laudo</span>
+                        </button>
+                        <button onclick="prepararNovoDocumentoClinico('guia')" class="btn-incluir-doc-clinico px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-brand-pink text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5">
+                            <i data-lucide="file-check" class="w-4 h-4 text-brand-pink"></i>
+                            <span>Incluir Guia</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mensagem de bloqueio para não-veterinários -->
+                <div id="crm-blocking-message" class="hidden bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex items-center gap-3 text-amber-200 text-xs font-semibold">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400 shrink-0"></i>
+                    <span>Atenção: A emissão de prescrições e registros clínicos requer credencial CRMV válida ativa no sistema.</span>
+                </div>
+
+                <div id="clinica-allowed-content" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Formulário de Prontuário / Laudo / Receita / Guia -->
+                    <div id="clinica-form-coluna" class="lg:col-span-1 bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-4">
+                        <h4 id="clinica-form-title" class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                            <i data-lucide="file-plus" class="w-4 h-4 text-brand-lime"></i>
+                            <span>Novo Documento Clínico</span>
+                        </h4>
+
+                        <form onsubmit="salvarRegistroClinico(event)" class="space-y-3">
+                            <input type="hidden" id="clinica-edit-id" value="">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione o Paciente</label>
+                                <select id="clinica-pet-select" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                                    <option value="">Carregando pets...</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Tipo de Documento</label>
+                                <select id="clinica-tipo" onchange="atualizarLabelDocumento()" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                                    <option value="receita">Receita Médica</option>
+                                    <option value="laudo">Laudo Diagnóstico</option>
+                                    <option value="guia">Guia de Encaminhamento / Exame</option>
+                                    <option value="vacina">Registro de Imunização</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Data</label>
+                                <input type="date" id="clinica-data" value="2026-05-18" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label id="clinica-detalhe-label" class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Detalhamento / Prescrição</label>
+                                <textarea id="clinica-detalhe" rows="4" placeholder="Descreva diagnósticos, posologias, resultados de exame ou autorizações da guia..." required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none placeholder:text-slate-600"></textarea>
+                            </div>
+
+                            <div class="flex items-center gap-2 pt-1">
+                                <button type="button" id="btn-cancelar-edit-clinico" onclick="resetarFormClinico()" class="hidden w-1/3 py-3 bg-slate-900 border border-slate-800 hover:bg-slate-800 font-bold text-xs text-slate-300 rounded-xl">Cancelar</button>
+                                <button type="submit" id="btn-salvar-clinico" class="flex-1 py-3 bg-brand-lime hover:opacity-90 font-bold text-xs text-slate-950 rounded-xl transition-all flex items-center justify-center gap-2">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                    <span>Salvar Documento</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Linha do Tempo e Histórico do Paciente -->
+                    <div id="clinica-timeline-coluna" class="lg:col-span-2 bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                                <i data-lucide="history" class="w-4 h-4 text-brand-blue"></i>
+                                <span>Laudos, Receitas e Guias Emitidos</span>
+                            </h4>
+                            <span id="prontuario-count" class="text-xs text-slate-400 font-bold">0 registros</span>
+                        </div>
+
+                        <div id="clinica-timeline" class="space-y-3 max-h-[480px] overflow-y-auto custom-scrollbar pr-1">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- TAB 5: RELATÓRIOS -->
+            <section id="tab-relatorios" class="tab-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 p-6 rounded-3xl border border-slate-850">
+                    <div>
+                        <h3 class="text-xl font-black text-white">Central de Relatórios</h3>
+                        <p class="text-xs text-slate-400">Análises consolidadas de serviços, tutores e desempenho por período.</p>
+                    </div>
+                    <button onclick="abrirModalGerarRelatorios()" class="px-4 py-2.5 bg-gradient-to-r from-brand-purple to-brand-blue hover:opacity-90 font-bold text-xs text-white rounded-xl shadow-md flex items-center gap-2">
+                        <i data-lucide="printer" class="w-4 h-4"></i>
+                        <span>Exportar / Imprimir</span>
+                    </button>
+                </div>
+
+                <!-- Seletor de Tipo de Relatório -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                    <button id="rel-tab-servicos" onclick="switchRelatorioTab('servicos')" class="relatorio-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white border border-slate-700 flex items-center gap-2">
+                        <i data-lucide="scissors" class="w-3.5 h-3.5"></i> Analítico de Serviços
+                    </button>
+                    <button id="rel-tab-tutor" onclick="switchRelatorioTab('tutor')" class="relatorio-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white flex items-center gap-2">
+                        <i data-lucide="users" class="w-3.5 h-3.5"></i> Analítico por Tutor
+                    </button>
+                    <button id="rel-tab-periodo" onclick="switchRelatorioTab('periodo')" class="relatorio-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white flex items-center gap-2">
+                        <i data-lucide="calendar-range" class="w-3.5 h-3.5"></i> Visualização por Período
+                    </button>
+                </div>
+
+                <!-- RELATÓRIO: ANALÍTICO DE SERVIÇOS -->
+                <div id="rel-conteudo-servicos" class="relatorio-conteudo space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Serviços Distintos</p>
+                            <h4 id="rel-serv-distintos" class="text-2xl font-black text-white mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Total de Atendimentos</p>
+                            <h4 id="rel-serv-total-atend" class="text-2xl font-black text-white mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Receita Total</p>
+                            <h4 id="rel-serv-receita-total" class="text-2xl font-black text-brand-lime mt-1">R$ 0,00</h4>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider font-extrabold border-b border-slate-800">
+                                    <tr>
+                                        <th class="py-4 px-6">Serviço</th>
+                                        <th class="py-4 px-6">Qtde. de Atendimentos</th>
+                                        <th class="py-4 px-6">% Confirmados</th>
+                                        <th class="py-4 px-6">Receita Total</th>
+                                        <th class="py-4 px-6">Ticket Médio</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rel-servicos-table-body" class="divide-y divide-slate-850"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RELATÓRIO: ANALÍTICO POR TUTOR -->
+                <div id="rel-conteudo-tutor" class="relatorio-conteudo space-y-4 hidden">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Tutores Ativos</p>
+                            <h4 id="rel-tutor-ativos" class="text-2xl font-black text-white mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Ticket Médio Geral</p>
+                            <h4 id="rel-tutor-ticket-medio" class="text-2xl font-black text-white mt-1">R$ 0,00</h4>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Receita Total</p>
+                            <h4 id="rel-tutor-receita-total" class="text-2xl font-black text-brand-lime mt-1">R$ 0,00</h4>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider font-extrabold border-b border-slate-800">
+                                    <tr>
+                                        <th class="py-4 px-6">Tutor</th>
+                                        <th class="py-4 px-6">Pets Vinculados</th>
+                                        <th class="py-4 px-6">Qtde. de Agendamentos</th>
+                                        <th class="py-4 px-6">Valor Total Gasto</th>
+                                        <th class="py-4 px-6">Último Atendimento</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rel-tutor-table-body" class="divide-y divide-slate-850"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RELATÓRIO: VISUALIZAÇÃO POR PERÍODO -->
+                <div id="rel-conteudo-periodo" class="relatorio-conteudo space-y-4 hidden">
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850 flex flex-col sm:flex-row sm:items-end gap-3">
+                        <div class="flex-1">
+                            <label class="text-[11px] font-bold text-slate-400 uppercase">Data Inicial</label>
+                            <input type="date" id="rel-periodo-inicio" class="w-full mt-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-blue">
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-[11px] font-bold text-slate-400 uppercase">Data Final</label>
+                            <input type="date" id="rel-periodo-fim" class="w-full mt-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-blue">
+                        </div>
+                        <button onclick="renderizarRelatorioPeriodo()" class="px-5 py-2.5 bg-gradient-to-r from-brand-blue to-brand-purple hover:opacity-90 font-bold text-xs text-white rounded-xl shadow-md flex items-center gap-2 justify-center">
+                            <i data-lucide="filter" class="w-4 h-4"></i>
+                            <span>Aplicar Filtro</span>
+                        </button>
+                        <button onclick="limparFiltroPeriodo()" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs rounded-xl">
+                            Limpar
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Agendamentos no Período</p>
+                            <h4 id="rel-periodo-qtde" class="text-2xl font-black text-white mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Receita no Período</p>
+                            <h4 id="rel-periodo-receita" class="text-2xl font-black text-brand-lime mt-1">R$ 0,00</h4>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-850">
+                            <p class="text-[11px] text-slate-400 font-bold uppercase">Ticket Médio</p>
+                            <h4 id="rel-periodo-ticket" class="text-2xl font-black text-white mt-1">R$ 0,00</h4>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider font-extrabold border-b border-slate-800">
+                                    <tr>
+                                        <th class="py-4 px-6">Data</th>
+                                        <th class="py-4 px-6">Paciente & Tutor</th>
+                                        <th class="py-4 px-6">Serviço</th>
+                                        <th class="py-4 px-6">Status</th>
+                                        <th class="py-4 px-6">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rel-periodo-table-body" class="divide-y divide-slate-850"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: USUÁRIOS E PERMISSÕES -->
+            <section id="tab-usuarios" class="tab-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 p-6 rounded-3xl border border-slate-850">
+                    <div>
+                        <h3 class="text-xl font-black text-white">Gerenciamento de Contas e Permissões de Login</h3>
+                        <p class="text-xs text-slate-400">Controle total de usuários, alteração de permissões e remoção de acessos.</p>
+                    </div>
+                    <button onclick="abrirModalUsuario()" class="px-5 py-3 bg-gradient-to-r from-rose-500 to-pink-600 hover:opacity-90 font-bold text-xs text-white rounded-xl shadow-lg flex items-center gap-2">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        <span>Criar Usuário</span>
+                    </button>
+                </div>
+
+                <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider font-extrabold border-b border-slate-800">
+                                <tr>
+                                    <th class="py-4 px-6">Nome do Usuário</th>
+                                    <th class="py-4 px-6">Cargo / Papel</th>
+                                    <th class="py-4 px-6">CPF Registrado</th>
+                                    <th class="py-4 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuarios-table-body" class="divide-y divide-slate-850">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===================== MODAIS ===================== -->
+
+    <!-- Modal: Editar Pet -->
+    <div id="modal-editar-pet" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-lg p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Editar Cadastro do Pet</h4>
+                <button onclick="fecharModalEditarPet()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarEdicaoPet(event)" class="space-y-3">
+                <input type="hidden" id="edit-pet-id" value="">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nome do Pet</label>
+                        <input type="text" id="edit-pet-nome" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Espécie</label>
+                        <select id="edit-pet-especie" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                            <option value="Cachorro">Cachorro</option>
+                            <option value="Gato">Gato</option>
+                            <option value="Ave">Ave</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Raça</label>
+                    <input type="text" id="edit-pet-raca" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Comportamento</label>
+                    <input type="text" id="edit-pet-comportamento" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Alergias / Restrições</label>
+                    <input type="text" id="edit-pet-alergias" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalEditarPet()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-blue text-xs font-bold text-white rounded-xl">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Cadastrar Novo Tutor -->
+    <div id="modal-tutor" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-lg p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Registrar Novo Tutor</h4>
+                <button onclick="fecharModalTutor()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarTutor(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nome Completo</label>
+                    <input type="text" id="tutor-nome" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">CPF</label>
+                        <input type="text" id="tutor-cpf" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Telefone</label>
+                        <input type="text" id="tutor-tel" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">E-mail</label>
+                    <input type="email" id="tutor-email" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Endereço</label>
+                    <input type="text" id="tutor-endereco" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalTutor()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-blue text-xs font-bold text-white rounded-xl">Cadastrar Tutor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Cadastro do Tutor -->
+    <div id="modal-editar-tutor" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-lg p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Editar Cadastro do Tutor</h4>
+                <button onclick="fecharModalEditarTutor()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarEdicaoTutor(event)" class="space-y-3">
+                <input type="hidden" id="edit-tutor-id" value="">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nome Completo</label>
+                    <input type="text" id="edit-tutor-nome" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">CPF</label>
+                        <input type="text" id="edit-tutor-cpf" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Telefone</label>
+                        <input type="text" id="edit-tutor-tel" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">E-mail</label>
+                    <input type="email" id="edit-tutor-email" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Endereço</label>
+                    <input type="text" id="edit-tutor-endereco" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalEditarTutor()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-blue text-xs font-bold text-white rounded-xl">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Cadastrar Novo Pet -->
+    <div id="modal-pet" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-lg p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Cadastrar Novo Pet</h4>
+                <button onclick="fecharModalPet()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarPet(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Tutor Responsável</label>
+                    <select id="pet-tutor-select" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nome do Pet</label>
+                        <input type="text" id="pet-nome" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Espécie</label>
+                        <select id="pet-especie" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                            <option value="Cachorro">Cachorro</option>
+                            <option value="Gato">Gato</option>
+                            <option value="Ave">Ave</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Raça</label>
+                    <input type="text" id="pet-raca" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Comportamento</label>
+                    <input type="text" id="pet-comportamento" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Alergias / Restrições</label>
+                    <input type="text" id="pet-alergias" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalPet()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-lime text-xs font-bold text-slate-950 rounded-xl">Cadastrar Pet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Agendar / Editar Consulta ou Vacinação -->
+    <div id="modal-agendamento" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-lg p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 id="modal-agendamento-titulo" class="font-black text-white text-base">Agendar Consulta</h4>
+                <button onclick="fecharModalAgendamento()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarAgendamento(event)" class="space-y-3">
+                <input type="hidden" id="edit-agend-id" value="">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Tutor</label>
+                        <select id="agend-tutor-select" onchange="popularPetsDoTutor()" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Pet</label>
+                        <select id="agend-pet-select" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Serviço</label>
+                    <input type="text" id="agend-tipo" required placeholder="Ex: Consulta Veterinária, Vacinação..." class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Data</label>
+                        <input type="date" id="agend-data" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Hora</label>
+                        <input type="time" id="agend-hora" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Valor (R$)</label>
+                        <input type="number" step="0.01" id="agend-valor" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalAgendamento()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-blue text-xs font-bold text-white rounded-xl">Salvar Agendamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal: Registrar / Editar Valores do Agendamento -->
+    <div id="modal-registrar-valor" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-md p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Registrar / Alterar Valor</h4>
+                <button onclick="fecharModalRegistrarValor()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarRegistroValor(event)" class="space-y-4">
+                <input type="hidden" id="valor-agend-id" value="">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Valor do Serviço / Consulta (R$)</label>
+                    <input type="number" step="0.01" id="valor-agend-input" required class="w-full bg-slate-900 border border-slate-800 text-sm rounded-xl p-3 text-white focus:outline-none">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="fecharModalRegistrarValor()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-lime text-xs font-bold text-slate-950 rounded-xl">Registrar Valor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Permissões do Usuário -->
+    <div id="modal-editar-permissao" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-md p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Editar Permissões de Login</h4>
+                <button onclick="fecharModalEditarPermissao()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarPermissaoUsuario(event)" class="space-y-4">
+                <input type="hidden" id="permissao-user-id" value="">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Selecione o Cargo / Papel</label>
+                    <select id="permissao-user-role" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-3 text-white focus:outline-none">
+                        <option value="admin">Admin (Acesso Total)</option>
+                        <option value="veterinario">Veterinário (Clínico & Receitas)</option>
+                        <option value="funcionario">Funcionário / Atendente</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="fecharModalEditarPermissao()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-purple text-xs font-bold text-white rounded-xl">Atualizar Permissão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Alterar Horário de Funcionamento -->
+    <div id="modal-horario-funcionamento" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-md p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Alterar Horário de Funcionamento</h4>
+                <button onclick="fecharModalHorarioFuncionamento()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarHorarioFuncionamento(event)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Abertura</label>
+                        <input type="time" id="horario-abertura" value="08:00" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Fechamento</label>
+                        <input type="time" id="horario-fechamento" value="18:00" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Funcionamento nos Fins de Semana</label>
+                    <select id="horario-fds" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                        <option value="sabado">Sábados (08h às 12h)</option>
+                        <option value="direto">Plantão 24h Finais de Semana</option>
+                        <option value="fechado">Fechado aos Finais de Semana</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalHorarioFuncionamento()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-lime text-xs font-bold text-slate-950 rounded-xl">Salvar Horários</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Gerar Relatórios -->
+    <div id="modal-gerar-relatorios" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-lg p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Gerar Relatórios Gerenciais</h4>
+                <button onclick="fecharModalGerarRelatorios()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Tipo de Relatório</label>
+                    <select id="relatorio-tipo" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                        <option value="financeiro">Relatório Financeiro Completo</option>
+                        <option value="agendamentos">Relatório de Agendamentos & Consultas</option>
+                        <option value="laudos">Relatório de Laudos e Receituários Emitidos</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Data Inicial</label>
+                        <input type="date" id="relatorio-inicio" value="2026-05-01" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Data Final</label>
+                        <input type="date" id="relatorio-fim" value="2026-05-31" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalGerarRelatorios()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="button" onclick="executarGeracaoRelatorio()" class="px-5 py-2 bg-gradient-to-r from-brand-blue to-brand-purple font-bold text-xs text-white rounded-xl flex items-center gap-1.5">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Exportar & Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Criar Usuário -->
+    <div id="modal-usuario" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-md p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-black text-white text-base">Criar Novo Usuário</h4>
+                <button onclick="fecharModalUsuario()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarNovoUsuario(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nome Completo</label>
+                    <input type="text" id="user-new-nome" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">CPF (Identificador)</label>
+                    <input type="text" id="user-new-cpf" placeholder="000.000.000-00" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <!-- O QUE: Campo de e-mail obrigatório para auth empresarial.
+                     PORQUÊ: E-mail serve como alternativa de login ao CPF.
+                     DEMO (mock): Input HTML simples; validacao em JS (validarEmail).
+                     TODO [DB] UNIQUE constraint no campo email da tabela users. -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">E-mail</label>
+                    <input type="email" id="user-new-email" placeholder="usuario@dominio.com" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Cargo / Papel</label>
+                    <select id="user-new-role" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                        <option value="admin">Administrador</option>
+                        <option value="veterinario">Veterinário</option>
+                        <option value="funcionario">Atendente / Funcionário</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModalUsuario()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-rose-500 font-bold text-xs text-white rounded-xl">Criar Usuário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Universal de Impressão (Receita, Laudo, Guia) -->
+    <div id="modal-impressao-documento" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div class="bg-white text-slate-900 w-full max-w-2xl p-8 rounded-2xl shadow-2xl space-y-6 print-card">
+            <div class="flex items-center justify-between border-b pb-4 border-slate-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black">
+                        🐾
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-lg text-slate-900">CLÍNICA VETERINÁRIA DAYVET-GESTÃO</h3>
+                        <p class="text-xs text-slate-500">Dr. Douglas Ferreira - CRMV-SP 45678</p>
+                    </div>
+                </div>
+                <div class="no-print flex gap-2">
+                    <button onclick="window.print()" class="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-xl flex items-center gap-2">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Documento
+                    </button>
+                    <button onclick="document.getElementById('modal-impressao-documento').classList.add('hidden')" class="px-3 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-slate-100 p-4 rounded-xl text-xs space-y-1">
+                    <p><strong>Paciente:</strong> <span id="doc-nome-pet">Rex (Golden Retriever)</span></p>
+                    <p><strong>Tutor:</strong> <span id="doc-nome-tutor">Douglas Silva Ferreira</span></p>
+                    <p><strong>Data de Emissão:</strong> <span id="doc-data">18/05/2026</span></p>
+                </div>
+
+                <div class="space-y-2">
+                    <h4 id="doc-titulo-tipo" class="font-bold text-sm uppercase text-slate-700 border-b pb-1">Prescrição Médica Veterinária</h4>
+                    <p id="doc-conteudo" class="text-sm font-mono whitespace-pre-line leading-relaxed text-slate-800 p-4 border border-dashed rounded-xl bg-slate-50">
+                        <!-- JS -->
+                    </p>
+                </div>
+
+                <div class="pt-8 text-center border-t border-slate-200 space-y-1">
+                    <div class="w-48 border-b border-slate-800 mx-auto"></div>
+                    <p class="text-xs font-bold text-slate-800">Assinatura do Médico Veterinário Responsável</p>
+                    <p class="text-[10px] text-slate-500">CRMV-SP 45678</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Recuperar Senha -->
+    <!-- BUGFIX 2026-09-15: z-[60] em vez de z-50 — login-screen usa backdrop-blur-xl que cria
+         stacking context isolado; modais que aparecem sobre o login precisam de z-index maior. -->
+    <div id="modal-recuperar-senha" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h4 class="font-black text-white text-base">Recuperar Senha</h4>
+                <button onclick="fecharModalRecuperarSenha()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Etapa 1: Informar CPF ou e-mail -->
+            <div id="recuperar-etapa-1">
+                <p class="text-xs text-slate-400 mb-4">Informe seu CPF ou e-mail para receber um código de verificação simulado.</p>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">CPF ou E-mail</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                        </span>
+                        <input type="text" id="recuperar-cpf" placeholder="CPF ou email@dominio.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Etapa 2: Definir nova senha -->
+            <div id="recuperar-etapa-2" class="hidden">
+                <p class="text-xs text-slate-400 mb-4">Código verificado! Defina sua nova senha.</p>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nova Senha</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+                            </span>
+                            <input type="password" id="recuperar-nova-senha" oninput="atualizarIndicadoresRegraSenha(this.value)" placeholder="Min. 8 caracteres" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Confirmar Senha</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+                            </span>
+                            <input type="password" id="recuperar-confirmar-senha" placeholder="Repita a senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                        </div>
+                    </div>
+                    <!-- Regras de validacao — politica 8+1Maiusc+1Num+1Especial -->
+                    <!-- O QUE: Indicadores visuais das regras de senha forte.
+                         PORQUÊ: Feedback em tempo real para o usuario durante reset.
+                         DEMO (mock): Regras atualizadas via JS (atualizarIndicadoresRegraSenha).
+                         TODO [DB] Mesma politica validada no backend com bcrypt. -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Regras de senha:</p>
+                        <p class="text-[10px] text-slate-500" id="regra-tamanho"><span class="inline-block w-3 mr-1">&#9675;</span> Minimo de 8 caracteres</p>
+                        <p class="text-[10px] text-slate-500" id="regra-simbolo"><span class="inline-block w-3 mr-1">&#9675;</span> Pelo menos 1 caractere especial (!@#$%...)</p>
+                        <p class="text-[10px] text-slate-500" id="regra-letras"><span class="inline-block w-3 mr-1">&#9675;</span> Pelo menos 1 letra maiuscula</p>
+                        <p class="text-[10px] text-slate-500" id="regra-numeros"><span class="inline-block w-3 mr-1">&#9675;</span> Pelo menos 1 numero</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="fecharModalRecuperarSenha()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                <button type="button" id="btn-recuperar-proximo" onclick="recuperarSenhaProximo()" class="px-4 py-2 bg-brand-blue hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <span>Enviar Código</span> <i data-lucide="send" class="w-3 h-3"></i>
+                </button>
+                <button type="button" id="btn-recuperar-confirmar" onclick="recuperarSenhaConfirmar()" class="hidden px-4 py-2 bg-brand-blue hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <span>Alterar Senha</span> <i data-lucide="key-round" class="w-3 h-3"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Troca Forçada de Senha (mustChange=true) -->
+    <!-- O QUE: Obriga usuario a definir senha forte no primeiro login.
+         PORQUÊ: Usuarios novos recebem senha temporaria e devem trocar.
+         DEMO (mock): Modal fullscreen sobre login; confirma login automatico.
+         BUGFIX 2026-09-15: z-[60] em vez de z-50 — mesmo motivo do modal-recuperar-senha.
+         TODO [DB] Fluxo via email com token JWT + POST /api/users/:id/change-password. -->
+    <div id="forcar-senha-etapa" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-brand-blue/20 text-brand-blue flex items-center justify-center">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                </div>
+                <h4 class="font-black text-white text-base">Alteração Obrigatória de Senha</h4>
+            </div>
+            <p class="text-xs text-slate-400">Você deve definir uma nova senha para acessar o sistema.</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nova Senha</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                            <i data-lucide="lock" class="w-4 h-4"></i>
+                        </span>
+                        <input type="password" id="forcar-senha-nova" oninput="atualizarIndicadoresForcarSenha(this.value)" placeholder="Min. 8 caracteres" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Confirmar Senha</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                            <i data-lucide="lock" class="w-4 h-4"></i>
+                        </span>
+                        <input type="password" id="forcar-senha-confirmar" placeholder="Repita a senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                    </div>
+                </div>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Regras de senha:</p>
+                    <p class="text-[10px] text-slate-500" id="forcar-regra-tamanho"><span class="inline-block w-3 mr-1">&#9675;</span> Mínimo de 8 caracteres</p>
+                    <p class="text-[10px] text-slate-500" id="forcar-regra-simbolo"><span class="inline-block w-3 mr-1">&#9675;</span> Pelo menos 1 caractere especial (!@#$%...)</p>
+                    <p class="text-[10px] text-slate-500" id="forcar-regra-letras"><span class="inline-block w-3 mr-1">&#9675;</span> Pelo menos 1 letra maiúscula</p>
+                    <p class="text-[10px] text-slate-500" id="forcar-regra-numeros"><span class="inline-block w-3 mr-1">&#9675;</span> Pelo menos 1 número</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="fecharModalForcarTrocaSenha()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar</button>
+                <button type="button" onclick="confirmarForcarTrocaSenha()" class="px-4 py-2 bg-brand-blue hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <span>Alterar e Entrar</span> <i data-lucide="key-round" class="w-3 h-3"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script principal do projeto -->
+    <script src="script.js"></script>
+</body>
+</html>

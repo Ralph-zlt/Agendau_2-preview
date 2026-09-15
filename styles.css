@@ -1,0 +1,405 @@
+/* ============================================
+   DAYVET-GESTÃO — FOLHA DE ESTILOS
+   ============================================ */
+
+/* Fonte principal do projeto */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* ===== 1. RESET E BASE ===== */
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #03001e;
+    color: #f1f5f9;
+    min-height: 100vh;
+}
+
+/* ===== 2. SCROLLBAR PERSONALIZADA ===== */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0a0029;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #8B00FF;
+    border-radius: 4px;
+}
+
+/* ===== 3. EFEITOS NEON ===== */
+/* --- Neon Borders (uso geral no app) --- */
+.neon-border-blue  { box-shadow: 0 0 15px rgba(0, 102, 255, 0.35); }
+.neon-border-pink  { box-shadow: 0 0 15px rgba(255, 0, 127, 0.35); }
+.neon-border-lime  { box-shadow: 0 0 15px rgba(204, 255, 0, 0.35); }
+
+/* --- Neon Text (uso geral no app) --- */
+.neon-text-lime { text-shadow: 0 0 8px rgba(204, 255, 0, 0.6); }
+.neon-text-pink { text-shadow: 0 0 8px rgba(255, 0, 127, 0.6); }
+
+/* --- Neon Intensificado (tela de login) --- */
+.neon-border-blue-login {
+    box-shadow:
+        0 0 10px rgba(0, 102, 255, 0.4),
+        0 0 5px  rgba(0, 102, 255, 0.2);
+}
+.neon-text-lime-login {
+    text-shadow:
+        0 0 10px rgba(204, 255, 0, 0.7),
+        0 0 5px  rgba(204, 255, 0, 0.3);
+}
+.neon-text-pink-login {
+    text-shadow:
+        0 0 10px rgba(255, 0, 127, 0.7),
+        0 0 5px  rgba(255, 0, 127, 0.3);
+}
+
+/* ===== 4. GLASS PANEL ===== */
+.glass-panel {
+    background: rgba(10, 0, 41, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ===== 5. REGRAS DE IMPRESSÃO ===== */
+@media print {
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    body { background: white !important; color: black !important; }
+    .print-card {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        color: black !important;
+        background: white !important;
+    }
+}
+
+/* ================================================================
+   SISTEMA DE TEMAS  (dark = padrão · light = claro)
+   -----------------------------------------------------------------
+   ★ MÉTODO PADRÃO COM VARIÁVEIS CSS ★
+   Para trocar as cores de um tema, EDITE APENAS os valores das
+   variáveis --... dentro do bloco :root[data-theme='...'] do tema.
+   As regras que vêm depois só APLICAM as variáveis às classes
+   utilitárias do Tailwind — não precisa mexer nelas.
+   ================================================================ */
+
+/* ===== 6. TEMA ESCURO (padrão) — paleta em variáveis ===== */
+:root[data-theme='dark'] {
+    color-scheme: dark;
+
+    /* Textos acinzentados: clarear para legibilidade sobre fundos escuros.
+       Obs.: não mexe em slate-800/900/950 (usados sobre chips claros, ex. logotipo lime). */
+    --escuro-texto-300: #dbe5f0;
+    --escuro-texto-400: #c3cddc;
+    --escuro-texto-500: #aab6c8;
+    --escuro-texto-600: #a5b2c5;
+    --escuro-texto-700: #c9d5e4;
+
+    /* Acentuados em fundo escuro: manter vivos */
+    --escuro-rosa:   #ff7796;
+    --escuro-ambar-300: #ffd48a;
+    --escuro-ambar-400: #ffc04d;
+}
+
+:root[data-theme='dark'] .text-slate-300 { color: var(--escuro-texto-300) !important; }
+:root[data-theme='dark'] .text-slate-400 { color: var(--escuro-texto-400) !important; }
+:root[data-theme='dark'] .text-slate-500 { color: var(--escuro-texto-500) !important; }
+:root[data-theme='dark'] .text-slate-600 { color: var(--escuro-texto-600) !important; }
+:root[data-theme='dark'] .text-slate-700 { color: var(--escuro-texto-700) !important; }
+
+:root[data-theme='dark'] .text-rose-400 { color: var(--escuro-rosa); }
+:root[data-theme='dark'] .text-amber-300 { color: var(--escuro-ambar-300); }
+:root[data-theme='dark'] .text-amber-400 { color: var(--escuro-ambar-400); }
+
+/* ===== 7. TEMA CLARO — paleta em variáveis =====
+   ★ EDITE AQUI as cores do modo claro ★
+   Cada grupo tem um comentário em português; basta trocar o valor
+   de uma variável que a mudança se espalha por todo o sistema. */
+:root[data-theme='light'] {
+    color-scheme: light;
+
+    /* --- FUNDOS (superfícies) --- */
+    /* Paleta aplicada: #F8FAFC (página), #FFFFFF (card), #D9E6F2 (nav/inputs), #DFEBED (suave) */
+    --pagina: #F8FAFC;               /* fundo geral do app (body) */
+    --card: #ffffff;                 /* cards e superfícies principais */
+    --nav-fundo: #D9E6F2;            /* header/navegação (sólido) */
+    --nav-fundo-90: rgba(217,230,242,0.95); /* header/navegação translúcido */
+    --branco: #ffffff;
+    --branco-suave: rgba(255,255,255,0.88); /* painéis translúcidos */
+    --branco-muito-suave: rgba(255,255,255,0.65);
+    --branco-forte: rgba(255,255,255,0.95);
+    --elemento: #DFEBED;             /* elementos internos (badges, chips) */
+    --elemento-hover: #c8dde8;       /* hover de elementos */
+    --apontador-hover: #f1f7fb;      /* hover de cards/menus */
+    --linha-hover: rgba(17,24,39,0.04); /* hover de linha em tabelas */
+    --suave-1: #F1F5F9;              /* painel muito suave */
+    --suave-2: #DFEBED;              /* painel suave alternativo */
+
+    /* --- TEXTOS (do mais escuro ao mais claro) --- */
+    /* Paleta: #111827 (títulos), #1E293B (subtítulos), #497285 (corpo/labels) */
+    --texto-primario: #111827;       /* títulos/fortes */
+    --texto-secundario: #1E293B;     /* subtítulos */
+    --texto-corpo: #2B4450;          /* corpo de texto */
+    --texto-suave: #497285;          /* textos suaves (labels, hints) */
+    --texto-fraco: #6b8a9a;          /* textos discretos */
+    --texto-600: #3d6070;
+    --texto-700: #2B4450;
+    --texto-800: #1E293B;
+    --texto-900: #111827;            /* textos bem escuros (inputs) */
+    --texto-base: #1E293B;           /* cor padrão do body */
+
+    /* --- BORDAS E DIVISORES --- */
+    /* Paleta: #DFEBED (borda principal), #D9E6F2 (borda suave) */
+    --borda: #DFEBED;                /* borda principal */
+    --borda-suave: #D9E6F2;          /* borda secundária */
+    --borda-50: rgba(223,235,237,0.7);
+    --borda-60: rgba(223,235,237,0.8);
+    --borda-clara: #e8f0f3;          /* borda bem clara (selects, toasts) */
+    --borda-divisora: #e2ecef;       /* divisores de linha (border-b) */
+
+    /* --- MARCA (cores do sistema)
+           Paleta: #2F80ED (azul primário), #10B981 (verde/confirmado),
+                   #F97316 (laranja/pendente), #FDE047 (amarelo/aviso)
+           OBS.: mantenha os <texto> escuros o bastante p/ contraste AA sobre branco. --- */
+    --lime-texto: #0d7a5f;           --lime-cheio: #10B981;
+    --lime-hover-texto: #0a6650;     --lime-hover-borda: #059669;
+    --lime-10: rgba(16,185,129,0.12);
+    --lime-20: rgba(16,185,129,0.2);
+    --lime-borda-20: rgba(16,185,129,0.25);
+    --lime-borda-40: rgba(16,185,129,0.4);
+    --lime-borda-50: rgba(16,185,129,0.5);
+
+    --pink-texto: #be185d;           --pink-hover-texto: #9d0f52;
+    --pink-hover-borda: #db2777;     --pink-10: rgba(190,24,93,0.10);
+
+    --azul-texto: #1a5fb4;           --azul-cheio: #2F80ED;
+    --azul-10: rgba(47,128,237,0.10);
+    --azul-20: rgba(47,128,237,0.16);
+    --azul-borda-30: rgba(47,128,237,0.32);
+
+    --roxo-texto: #6d28d9;           --roxo-cheio: #7c3aed;
+    --roxo-20: rgba(124,58,237,0.14);
+    --roxo-30: rgba(124,58,237,0.18);
+    --roxo-borda-20: rgba(109,40,217,0.22);
+    --roxo-selecao: rgba(124,58,237,0.2);
+
+    --amarelo-texto: #92560a;        --amarelo-hover-texto: #7a4508;
+    --amarelo-10: rgba(253,224,71,0.25);
+    --amarelo-borda-20: rgba(253,224,71,0.4);
+
+    /* --- STATUS (cancelado / pendente / aviso) --- */
+    /* Paleta: #F97316 (laranja/pendente), #F78536 (variante) */
+    --rosa-texto: #e11d48;           --rosa-cheio: #f43f5e;
+    --rosa-suave-10: rgba(225,29,72,0.10);
+    --rosa-suave-12: rgba(225,29,72,0.12);
+    --rosa-borda-30: rgba(225,29,72,0.30);
+    --rosa-borda-35: rgba(225,29,72,0.35);
+
+    --ambar-texto: #c2410c;
+    --ambar-suave: rgba(249,115,22,0.12);
+    --ambar-borda: rgba(249,115,22,0.35);
+
+    /* --- SOMBRAS, ANÉIS E VIDRO --- */
+    --sombra-azul: 0 10px 30px rgba(47,128,237,0.16);
+    --sombra-lime: 0 8px 24px rgba(16,185,129,0.14);
+    --sombra-2xl: 0 18px 44px rgba(17,24,39,0.08);
+    --sombra-xl: 0 10px 30px rgba(17,24,39,0.06);
+    --sombra-lg: 0 6px 18px rgba(17,24,39,0.05);
+    --sombra-md: 0 4px 12px rgba(17,24,39,0.04);
+    --sombra-toast: 0 8px 24px rgba(17,24,39,0.10);
+    --anel-azul: rgba(47,128,237,0.25);
+    --backdrop-modal: rgba(17,24,39,0.45);
+    --backdrop-modal-forte: rgba(17,24,39,0.55);
+    --vidro-fundo: rgba(255,255,255,0.80);
+    --vidro-borda: rgba(17,24,39,0.08);
+
+    /* --- BRILHOS (sem neon no modo claro — minimalista) --- */
+    --neon-azul: rgba(47,128,237,0.10);
+    --neon-pink: rgba(219,39,119,0.10);
+    --neon-lime: rgba(16,185,129,0.12);
+
+    /* --- SCROLLBAR --- */
+    --trilha: #D9E6F2;
+    --polegar: #8ecae6;
+}
+
+/* --- APLICAÇÃO DAS VARIÁVEIS (modo claro) --- */
+
+/* Superfícies */
+:root[data-theme='light'] body { background-color: var(--pagina); color: var(--texto-base); }
+
+:root[data-theme='light'] .bg-slate-950 { background-color: var(--nav-fundo) !important; }
+:root[data-theme='light'] .bg-slate-950\/60 { background-color: var(--branco-suave) !important; }
+:root[data-theme='light'] .bg-slate-950\/80 { background-color: var(--branco-forte) !important; }
+
+:root[data-theme='light'] .bg-slate-900 { background-color: var(--card) !important; }
+:root[data-theme='light'] .bg-slate-900\/60 { background-color: var(--branco-muito-suave) !important; }
+:root[data-theme='light'] .bg-slate-900\/80 { background-color: var(--branco-suave) !important; }
+:root[data-theme='light'] .bg-slate-900\/90 { background-color: var(--branco-forte) !important; }
+
+:root[data-theme='light'] .bg-slate-800 { background-color: var(--elemento) !important; }
+:root[data-theme='light'] .bg-slate-700 { background-color: var(--elemento-hover) !important; }
+:root[data-theme='light'] .bg-slate-100 { background-color: var(--suave-1) !important; }
+:root[data-theme='light'] .bg-slate-200 { background-color: var(--suave-2) !important; }
+:root[data-theme='light'] .bg-slate-50 { background-color: var(--pagina) !important; }
+:root[data-theme='light'] .bg-white { background-color: var(--branco) !important; }
+
+:root[data-theme='light'] .hover\:bg-slate-900:hover { background-color: var(--apontador-hover) !important; }
+:root[data-theme='light'] .hover\:bg-slate-800:hover { background-color: var(--elemento) !important; }
+:root[data-theme='light'] .hover\:bg-slate-850:hover { background-color: var(--elemento) !important; }
+:root[data-theme='light'] .hover\:bg-slate-700:hover { background-color: var(--elemento-hover) !important; }
+:root[data-theme='light'] tr.hover\:bg-slate-900\/60:hover { background-color: var(--linha-hover) !important; }
+
+/* Textos */
+:root[data-theme='light'] .text-white { color: var(--texto-primario) !important; }
+:root[data-theme='light'] .text-slate-50 { color: var(--texto-primario) !important; }
+:root[data-theme='light'] .text-slate-100 { color: var(--texto-primario) !important; }
+:root[data-theme='light'] .text-slate-200 { color: var(--texto-secundario) !important; }
+:root[data-theme='light'] .text-slate-300 { color: var(--texto-corpo) !important; }
+:root[data-theme='light'] .text-slate-400 { color: var(--texto-suave) !important; }
+:root[data-theme='light'] .text-slate-500 { color: var(--texto-fraco) !important; }
+:root[data-theme='light'] .text-slate-600 { color: var(--texto-600) !important; }
+:root[data-theme='light'] .text-slate-700 { color: var(--texto-700) !important; }
+:root[data-theme='light'] .text-slate-800 { color: var(--texto-800) !important; }
+:root[data-theme='light'] .text-slate-900 { color: var(--texto-900) !important; }
+:root[data-theme='light'] .text-slate-950 { color: var(--texto-primario) !important; }
+
+/* Bordas e divisores */
+:root[data-theme='light'] .border-slate-700 { border-color: var(--borda) !important; }
+:root[data-theme='light'] .border-slate-800 { border-color: var(--borda-suave) !important; }
+:root[data-theme='light'] .border-slate-800\/50 { border-color: var(--borda-50) !important; }
+:root[data-theme='light'] .border-slate-800\/60 { border-color: var(--borda-60) !important; }
+:root[data-theme='light'] .border-slate-850 { border-color: var(--borda) !important; }
+:root[data-theme='light'] .border-slate-200 { border-color: var(--borda-clara) !important; }
+:root[data-theme='light'] .divide-slate-850 > :not([hidden]) ~ :not([hidden]) { border-color: var(--borda) !important; }
+:root[data-theme='light'] .border-b { border-color: var(--borda-divisora) !important; }
+
+/* Fundos de status */
+:root[data-theme='light'] .bg-red-950\/40 { background-color: var(--rosa-suave-10) !important; }
+:root[data-theme='light'] .border-rose-800\/40 { border-color: var(--rosa-borda-30) !important; }
+:root[data-theme='light'] .bg-rose-500\/10 { background-color: var(--rosa-suave-12) !important; }
+:root[data-theme='light'] .border-rose-500\/40 { border-color: var(--rosa-borda-35) !important; }
+:root[data-theme='light'] .bg-rose-500 { background-color: var(--rosa-cheio) !important; }
+:root[data-theme='light'] .text-rose-400 { color: var(--rosa-texto) !important; }
+
+:root[data-theme='light'] .bg-amber-500\/10 { background-color: var(--ambar-suave) !important; }
+:root[data-theme='light'] .border-amber-500\/30 { border-color: var(--ambar-borda) !important; }
+:root[data-theme='light'] .text-amber-200 { color: var(--ambar-texto) !important; }
+:root[data-theme='light'] .text-amber-400 { color: var(--ambar-texto) !important; }
+
+/* Cores de marca: textos */
+:root[data-theme='light'] .text-brand-lime { color: var(--lime-texto) !important; }
+:root[data-theme='light'] .text-brand-pink { color: var(--pink-texto) !important; }
+:root[data-theme='light'] .text-brand-blue { color: var(--azul-texto) !important; }
+:root[data-theme='light'] .text-brand-purple { color: var(--roxo-texto) !important; }
+:root[data-theme='light'] .text-brand-yellow { color: var(--amarelo-texto) !important; }
+
+:root[data-theme='light'] .bg-brand-lime { background-color: var(--lime-cheio) !important; }
+:root[data-theme='light'] .bg-brand-blue { background-color: var(--azul-cheio) !important; }
+:root[data-theme='light'] .bg-brand-purple { background-color: var(--roxo-cheio) !important; }
+:root[data-theme='light'] .bg-brand-dark { background-color: var(--nav-fundo) !important; }
+:root[data-theme='light'] .bg-brand-dark\/90 { background-color: var(--nav-fundo-90) !important; }
+:root[data-theme='light'] .bg-brand-card { background-color: var(--card) !important; }
+
+/* Marca: variantes com transparência */
+:root[data-theme='light'] .bg-brand-lime\/10 { background-color: var(--lime-10) !important; }
+:root[data-theme='light'] .bg-brand-blue\/10 { background-color: var(--azul-10) !important; }
+:root[data-theme='light'] .bg-brand-blue\/20 { background-color: var(--azul-20) !important; }
+:root[data-theme='light'] .bg-brand-pink\/10 { background-color: var(--pink-10) !important; }
+:root[data-theme='light'] .bg-brand-yellow\/10 { background-color: var(--amarelo-10) !important; }
+:root[data-theme='light'] .bg-brand-purple\/20 { background-color: var(--roxo-20) !important; }
+:root[data-theme='light'] .bg-brand-purple\/30 { background-color: var(--roxo-30) !important; }
+
+:root[data-theme='light'] .border-brand-lime\/20 { border-color: var(--lime-borda-20) !important; }
+:root[data-theme='light'] .border-brand-lime\/40 { border-color: var(--lime-borda-40) !important; }
+:root[data-theme='light'] .border-brand-lime\/50 { border-color: var(--lime-borda-50) !important; }
+:root[data-theme='light'] .border-brand-blue { border-color: var(--azul-texto) !important; }
+:root[data-theme='light'] .border-brand-blue\/30 { border-color: var(--azul-borda-30) !important; }
+:root[data-theme='light'] .border-brand-purple { border-color: var(--roxo-texto) !important; }
+:root[data-theme='light'] .border-brand-purple\/20 { border-color: var(--roxo-borda-20) !important; }
+:root[data-theme='light'] .border-brand-yellow\/20 { border-color: var(--amarelo-borda-20) !important; }
+
+/* Hovers de marca */
+:root[data-theme='light'] .hover\:text-white:hover { color: var(--texto-primario) !important; }
+:root[data-theme='light'] .hover\:text-brand-lime:hover { color: var(--lime-hover-texto) !important; }
+:root[data-theme='light'] .hover\:text-brand-pink:hover { color: var(--pink-hover-texto) !important; }
+:root[data-theme='light'] .hover\:text-brand-yellow:hover { color: var(--amarelo-hover-texto) !important; }
+:root[data-theme='light'] .hover\:border-brand-blue:hover { border-color: var(--azul-cheio) !important; }
+:root[data-theme='light'] .hover\:border-brand-lime:hover { border-color: var(--lime-hover-borda) !important; }
+:root[data-theme='light'] .hover\:border-brand-pink:hover { border-color: var(--pink-hover-borda) !important; }
+
+/* Gradientes */
+:root[data-theme='light'] .from-brand-dark { --tw-gradient-from: var(--nav-fundo) !important; }
+:root[data-theme='light'] .from-brand-blue { --tw-gradient-from: var(--azul-cheio) !important; }
+:root[data-theme='light'] .from-brand-purple { --tw-gradient-from: var(--roxo-cheio) !important; }
+:root[data-theme='light'] .from-brand-lime\/20 { --tw-gradient-from: var(--lime-20) !important; }
+:root[data-theme='light'] .from-rose-500 { --tw-gradient-from: var(--rosa-cheio) !important; }
+:root[data-theme='light'] .via-slate-900 { --tw-gradient-via: var(--card) !important; }
+:root[data-theme='light'] .to-brand-blue { --tw-gradient-to: var(--azul-texto) !important; }
+:root[data-theme='light'] .to-brand-purple { --tw-gradient-to: var(--roxo-texto) !important; }
+:root[data-theme='light'] .to-brand-lime\/40 { --tw-gradient-to: var(--lime-borda-40) !important; }
+:root[data-theme='light'] .to-pink-600 { --tw-gradient-to: var(--pink-hover-borda) !important; }
+
+/* Sombras e anéis */
+:root[data-theme='light'] .shadow-brand-blue\/30 { box-shadow: var(--sombra-azul) !important; }
+:root[data-theme='light'] .shadow-brand-lime\/20 { box-shadow: var(--sombra-lime) !important; }
+:root[data-theme='light'] .ring-brand-blue\/20 { --tw-ring-color: var(--anel-azul) !important; }
+:root[data-theme='light'] .shadow-2xl { box-shadow: var(--sombra-2xl) !important; }
+:root[data-theme='light'] .shadow-xl { box-shadow: var(--sombra-xl) !important; }
+:root[data-theme='light'] .shadow-lg { box-shadow: var(--sombra-lg) !important; }
+:root[data-theme='light'] .shadow-md { box-shadow: var(--sombra-md) !important; }
+
+/* Backdrops de modal */
+:root[data-theme='light'] .bg-black\/80 { background-color: var(--backdrop-modal) !important; }
+:root[data-theme='light'] .bg-black\/90 { background-color: var(--backdrop-modal-forte) !important; }
+
+/* Glass panel */
+:root[data-theme='light'] .glass-panel {
+    background: var(--vidro-fundo);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--vidro-borda);
+}
+
+/* Neon: glows reduzidos apenas no app */
+:root[data-theme='light'] .neon-border-blue { box-shadow: 0 2px 8px var(--neon-azul); }
+:root[data-theme='light'] .neon-border-pink { box-shadow: 0 2px 8px var(--neon-pink); }
+:root[data-theme='light'] .neon-border-lime { box-shadow: 0 2px 8px var(--neon-lime); }
+:root[data-theme='light'] .neon-text-lime { text-shadow: none; color: var(--lime-texto); }
+:root[data-theme='light'] .neon-text-pink { text-shadow: none; color: var(--pink-texto); }
+
+/* Inputs e controles */
+:root[data-theme='light'] input,
+:root[data-theme='light'] select,
+:root[data-theme='light'] textarea {
+    background-color: var(--card) !important;
+    color: var(--texto-900) !important;
+    border-color: var(--borda) !important;
+}
+:root[data-theme='light'] select option { background-color: var(--card) !important; color: var(--texto-900) !important; }
+
+/* Toasts */
+:root[data-theme='light'] .pointer-events-auto {
+    background-color: var(--card) !important;
+    color: var(--texto-900) !important;
+    border-color: var(--borda-clara) !important;
+    box-shadow: var(--sombra-toast) !important;
+}
+
+/* Scrollbar */
+:root[data-theme='light'] .custom-scrollbar::-webkit-scrollbar-track { background: var(--trilha); }
+:root[data-theme='light'] .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--polegar); }
+
+/* Selection */
+:root[data-theme='light'] .selection\:bg-brand-purple::selection { background-color: var(--roxo-selecao) !important; }
+:root[data-theme='light'] .selection\:text-white::selection { color: var(--texto-primario) !important; }
+
+/* Tela de Login no modo claro (Fase 5): herda o tema claro do app —
+   fundo translúcido sobre a página, card branco e sem brilho neon.
+   As regras genéricas acima já remapeiam bg-slate-*/text-*/borders. */
+:root[data-theme='light'] #login-screen { background-color: var(--backdrop-modal) !important; backdrop-filter: blur(8px); }
+:root[data-theme='light'] .neon-border-blue-login { box-shadow: var(--sombra-2xl); }
+:root[data-theme='light'] .neon-text-lime-login { text-shadow: none; }
+:root[data-theme='light'] .neon-text-pink-login { text-shadow: none; }
+
+/* Hover roxo do botão "Esqueci a senha?" — classe Tailwind customizada não gerada pelo CDN */
+#btn-esqueci-senha:hover { color: #8b00ff; }
