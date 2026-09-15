@@ -401,5 +401,17 @@ body {
 :root[data-theme='light'] .neon-text-lime-login { text-shadow: none; }
 :root[data-theme='light'] .neon-text-pink-login { text-shadow: none; }
 
+/* Cabeçalho do login no modo claro: faixa em gradiente de marca (azul→roxo)
+   para o nome do sistema manter contraste — texto escuro sobre o card
+   branco ficava ilegível/feio (contraste reprovado). Só vale no modo claro;
+   no escuro o neon original continua intacto. */
+:root[data-theme='light'] #login-cabecalho {
+    background: linear-gradient(135deg, #2F80ED 0%, #7c3aed 100%) !important;
+    border-color: rgba(255,255,255,0.25) !important;
+}
+:root[data-theme='light'] #login-cabecalho h1 { color: #ffffff !important; }
+:root[data-theme='light'] #login-cabecalho h1 .neon-text-lime-login { color: #ccff00 !important; }
+:root[data-theme='light'] #login-cabecalho p.neon-text-pink-login { color: rgba(255,255,255,0.85) !important; }
+
 /* Hover roxo do botão "Esqueci a senha?" — classe Tailwind customizada não gerada pelo CDN */
 #btn-esqueci-senha:hover { color: #8b00ff; }
