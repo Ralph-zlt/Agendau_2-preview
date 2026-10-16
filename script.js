@@ -444,8 +444,8 @@ function atualizarPermissoesNavegacao() {
     // Dashboard: Gerar Relatórios (Veterinário, Funcionário, Admin)
     toggleEl('btn-gerar-relatorios-dashboard', temPermissao('relatorios_gerar'));
 
-    // Agendamentos: "Solicitar Vacinação" é exclusivo do Administrador; "Agendar" exige consulta_agendar
-    toggleEl('btn-solicitar-vacinacao', currentRole === 'admin');
+    // Agendamentos: "Agendar Vacinação" p/ quem tem vacinacao_agendar (admin via '*', veterinário); "Agendar" exige consulta_agendar
+    toggleEl('btn-solicitar-vacinacao', temPermissao('vacinacao_agendar'));
     toggleEl('btn-agendar-consulta', temPermissao('consulta_agendar'));
 
     // Tutores & Pets: Novo Tutor (Funcionário/Admin) e Novo Pet (só Admin)
