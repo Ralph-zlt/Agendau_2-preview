@@ -141,7 +141,7 @@ body {
     --texto-secundario: #1E293B;     /* subtítulos */
     --texto-corpo: #2B4450;          /* corpo de texto */
     --texto-suave: #497285;          /* textos suaves (labels, hints) */
-    --texto-fraco: #6b8a9a;          /* textos discretos */
+    --texto-fraco: #5f7887;          /* textos discretos (AA ≥4.5 sobre branco — refinado 2026-09-25) */
     --texto-600: #3d6070;
     --texto-700: #2B4450;
     --texto-800: #1E293B;
@@ -221,6 +221,27 @@ body {
     /* --- SCROLLBAR --- */
     --trilha: #D9E6F2;
     --polegar: #8ecae6;
+
+    /* --- TELA DE LOGIN: mantém o neon escuro (padrão de mercado).
+           Edite aqui se quiser mudar as cores do login no modo claro. --- */
+    --login-fundo: rgba(3,0,30,0.92);
+    --login-fundo-cheio: #03001e;
+    --login-via: #0a0029;
+    --login-roxo-to: #8b00ff;
+    --login-superficie: #170a3a;
+    --login-input-fundo: #0d0526;
+    --login-texto-primario: #f1f5f9;
+    --login-texto-secundario: #e5ecf5;
+    --login-texto-corpo: #c4cedd;
+    --login-texto-suave: #94a3b8;
+    --login-texto-fraco: #7b86a0;
+    --login-texto-950: #0f172a;
+    --login-borda: #2b3a5c;
+    --login-lime: #ccff00;
+    --login-pink: #ff007f;
+    --login-azul: #66a3ff;
+    --login-borda-azul: rgba(0,102,255,0.35);
+    --login-borda-roxo: rgba(139,0,255,0.25);
 }
 
 /* --- APLICAÇÃO DAS VARIÁVEIS (modo claro) --- */
@@ -393,25 +414,106 @@ body {
 :root[data-theme='light'] .selection\:bg-brand-purple::selection { background-color: var(--roxo-selecao) !important; }
 :root[data-theme='light'] .selection\:text-white::selection { color: var(--texto-primario) !important; }
 
-/* Tela de Login no modo claro (Fase 5): herda o tema claro do app —
-   fundo translúcido sobre a página, card branco e sem brilho neon.
-   As regras genéricas acima já remapeiam bg-slate-*/text-*/borders. */
-:root[data-theme='light'] #login-screen { background-color: var(--backdrop-modal) !important; backdrop-filter: blur(8px); }
-:root[data-theme='light'] .neon-border-blue-login { box-shadow: var(--sombra-2xl); }
-:root[data-theme='light'] .neon-text-lime-login { text-shadow: none; }
-:root[data-theme='light'] .neon-text-pink-login { text-shadow: none; }
-
-/* Cabeçalho do login no modo claro: faixa em gradiente de marca (azul→roxo)
-   para o nome do sistema manter contraste — texto escuro sobre o card
-   branco ficava ilegível/feio (contraste reprovado). Só vale no modo claro;
-   no escuro o neon original continua intacto. */
+/* Tela de Login no modo claro (ROADMAP §2 Baixa — follow-up 2026-09-24):
+   acompanha o tema claro (card branco, textos escuros) em vez do neon escuro.
+   Exceção de marca: o bloco do ícone paw-print mantém lima padrão #ccff00
+   nos 2 temas (cor única — não muda entre temas). */
+:root[data-theme='light'] #login-screen { background-color: var(--nav-fundo-90) !important; }
+:root[data-theme='light'] #login-screen .bg-slate-900 { background-color: var(--card) !important; }
+:root[data-theme='light'] #login-screen .bg-slate-950 { background-color: var(--suave-1) !important; }
+:root[data-theme='light'] #login-screen .text-white { color: var(--texto-primario) !important; }
+:root[data-theme='light'] #login-screen .text-slate-100 { color: var(--texto-secundario) !important; }
+:root[data-theme='light'] #login-screen .text-slate-300 { color: var(--texto-corpo) !important; }
+:root[data-theme='light'] #login-screen .text-slate-400 { color: var(--texto-suave) !important; }
+:root[data-theme='light'] #login-screen .text-slate-500 { color: var(--texto-fraco) !important; }
+:root[data-theme='light'] #login-screen .border-slate-800 { border-color: var(--borda) !important; }
+:root[data-theme='light'] #login-screen .border-brand-purple\/20 { border-color: var(--roxo-borda-20) !important; }
+:root[data-theme='light'] #login-screen .bg-brand-lime { background-color: #ccff00 !important; }
+:root[data-theme='light'] #login-screen .text-slate-950 { color: #0f172a !important; }
+:root[data-theme='light'] #login-screen .neon-text-lime-login { text-shadow: none; color: var(--lime-texto); }
+:root[data-theme='light'] #login-screen .neon-text-pink-login { text-shadow: none; color: var(--pink-texto); }
+:root[data-theme='light'] #login-screen input { background-color: var(--card) !important; color: var(--texto-900) !important; border-color: var(--borda) !important; }
+/* ===== 9.1 CABEÇALHO DO LOGIN TODO CLARO (follow-up §2 — "DayVet" se confundia com o fundo) =====
+   Gradiente claro explícito sem roxo forte + textos de alto contraste.
+   Escuro intocado (regras abaixo só valem em light). */
 :root[data-theme='light'] #login-cabecalho {
-    background: linear-gradient(135deg, #2F80ED 0%, #7c3aed 100%) !important;
-    border-color: rgba(255,255,255,0.25) !important;
+    background: linear-gradient(135deg, #D9E6F2 0%, #FFFFFF 55%, #EDE9FE 100%) !important;
+    border-bottom: 1px solid var(--borda) !important;
 }
-:root[data-theme='light'] #login-cabecalho h1 { color: #ffffff !important; }
-:root[data-theme='light'] #login-cabecalho h1 .neon-text-lime-login { color: #ccff00 !important; }
-:root[data-theme='light'] #login-cabecalho p.neon-text-pink-login { color: rgba(255,255,255,0.85) !important; }
+:root[data-theme='light'] #login-cabecalho h1 { color: #0f172a !important; }
+:root[data-theme='light'] #login-cabecalho .neon-text-lime-login { text-shadow: none; color: var(--lime-texto) !important; }
+:root[data-theme='light'] #login-cabecalho .neon-text-pink-login { text-shadow: none; color: var(--pink-texto) !important; }
+:root[data-theme='light'] #login-cabecalho .bg-brand-lime { background-color: #ccff00 !important; box-shadow: var(--sombra-lime); }
+:root[data-theme='light'] #btn-tema-login {
+    background-color: var(--elemento) !important;
+    border-color: var(--borda) !important;
+    color: var(--texto-suave) !important;
+}
+:root[data-theme='light'] #btn-tema-login:hover { color: var(--texto-primario) !important; }
+/* Contorno do card de login no claro: borda sólida + sombra (sem neon). */
+:root[data-theme='light'] #login-screen .border-brand-blue\/30 { border-color: var(--borda) !important; }
+:root[data-theme='light'] #login-screen .neon-border-blue-login { box-shadow: var(--sombra-2xl); }
+/* ===== 9.2 PREVIEW DE IMPRESSÃO ACOMPANHA O TEMA (só tela) =====
+   No modo escuro o documento abre escuro (sem estouro claro); no papel
+   continua branco (regras @media print da §5, que prevalecem na impressão). */
+@media screen {
+    :root[data-theme='dark'] #doc-print-card { background-color: #0a0029 !important; color: #e2e8f0 !important; border: 1px solid #1e293b !important; }
+    :root[data-theme='dark'] #doc-print-card .text-slate-900 { color: #f1f5f9 !important; }
+    :root[data-theme='dark'] #doc-print-card .text-slate-800 { color: #e2e8f0 !important; }
+    :root[data-theme='dark'] #doc-print-card .text-slate-700 { color: #cbd5e1 !important; }
+    :root[data-theme='dark'] #doc-print-card .text-slate-500 { color: #94a3b8 !important; }
+    :root[data-theme='dark'] #doc-print-card .bg-slate-100 { background-color: #0f172a !important; }
+    :root[data-theme='dark'] #doc-print-card .bg-slate-50 { background-color: #0f172a !important; }
+    :root[data-theme='dark'] #doc-print-card .border-slate-200 { border-color: #1e293b !important; }
+    :root[data-theme='dark'] #doc-print-card .bg-slate-900 { background-color: #e2e8f0 !important; color: #0f172a !important; }
+    :root[data-theme='dark'] #doc-print-card .bg-slate-900.text-white { color: #0f172a !important; }
+    :root[data-theme='dark'] #doc-print-card .bg-slate-200 { background-color: #1e293b !important; }
+    :root[data-theme='dark'] #doc-print-card .bg-slate-200.text-slate-700 { color: #e2e8f0 !important; }
+}
+
+/* Ícone DayVet (paw-print) — cor única padrão #ccff00 nos 2 temas (header + login). */
+:root[data-theme='light'] header i[data-lucide="paw-print"] { color: #ccff00 !important; }
 
 /* Hover roxo do botão "Esqueci a senha?" — classe Tailwind customizada não gerada pelo CDN */
 #btn-esqueci-senha:hover { color: #8b00ff; }
+
+/* ===== 8. TOOLTIP INFO DO LOGIN (ROADMAP §1 item 6) =====
+   Exibição imediata no hover/foco (sem delay do title= nativo).
+   Base escura no tema escuro; acompanha o tema claro no modo claro (§9/login claro). */
+.tooltip-info-login {
+    background-color: #1e1b4b;
+    color: #f1f5f9;
+    box-shadow: 0 8px 24px rgba(3, 0, 30, 0.45), 0 0 12px rgba(168, 85, 247, 0.25);
+    transform: translateY(4px);
+}
+/* Visível via hover/foco do grupo (Tailwind) ou via toque/teclado (JS: .tooltip-visivel / aria-expanded). */
+.group\/info:hover .tooltip-info-login,
+.group\/info:focus-within .tooltip-info-login,
+.tooltip-info-login.tooltip-visivel,
+#btn-info-login[aria-expanded="true"] + .tooltip-info-login {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0);
+}
+/* Modo claro: login agora acompanha o tema claro — tooltip claro com vars do tema. */
+:root[data-theme='light'] .tooltip-info-login {
+    background-color: var(--card);
+    color: var(--texto-secundario);
+    border-color: var(--roxo-borda-20);
+    box-shadow: var(--sombra-md);
+}
+
+/* ===== 9. CARD DE ANEXOS NOS 2 TEMAS (ROADMAP §1 item 8) =====
+   #anexos-card/#lista-anexos usam utilitários slate que já são
+   espelhados para variáveis em §7 (bg-slate-950→--nav-fundo,
+   bg-slate-900/80→--branco-suave, border-slate-800→--borda-suave,
+   text-slate-100/200→--texto-primario/secundario, etc.).
+   Bloco explícito de garantia de contraste e consistência. */
+:root[data-theme='light'] #anexos-card {
+    background-color: var(--nav-fundo) !important;
+    border-color: var(--borda) !important;
+}
+:root[data-theme='light'] #lista-anexos .bg-slate-900\/80 {
+    background-color: var(--branco-suave) !important;
+    border-color: var(--borda-suave) !important;
+}

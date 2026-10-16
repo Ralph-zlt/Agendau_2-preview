@@ -93,12 +93,25 @@
                 <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">CPF ou E-mail</label>
-                        <div class="relative">
+                        <div class="relative group/info">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
                                 <i data-lucide="user" class="w-4 h-4"></i>
                             </span>
-                            <input type="text" id="login-cpf" placeholder="CPF ou email@dominio.com" required class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                            <input type="text" id="login-cpf" placeholder="CPF ou email@dominio.com" required autocomplete="off"
+                                oninput="filtrarSugestoesLogin()" onfocus="filtrarSugestoesLogin()"
+                                aria-describedby="tooltip-info-login"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
+                            <!-- Botão info (ROADMAP §1 item 6): roxo claro chamativo; tooltip customizado
+                                 instantâneo via #tooltip-info-login (sem title= nativo). -->
+                            <button type="button" id="btn-info-login" aria-label="Sobre o acesso" aria-describedby="tooltip-info-login" aria-expanded="false"
+                                class="absolute inset-y-0 right-1 my-1 flex w-7 items-center justify-center rounded-lg border border-purple-400/50 bg-purple-500/15 text-[#C084FC] shadow-[0_0_10px_rgba(168,85,247,0.45)] transition-all hover:bg-purple-500/30 hover:text-[#E9D5FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300">
+                                <i data-lucide="info" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                            <span id="tooltip-info-login" role="tooltip"
+                                class="tooltip-info-login pointer-events-none invisible absolute bottom-full right-0 z-10 mb-2 w-64 rounded-xl border border-purple-400/40 px-3 py-2 text-left text-[11px] font-semibold leading-snug opacity-0 transition-opacity duration-75 group-hover/info:visible group-hover/info:opacity-100 group-focus-within/info:visible group-focus-within/info:opacity-100">Quando implantado, o CPF ou e-mail identifica se é administrador, veterinário ou funcionário. Para acesso rápido de protótipo (bypass): clique na barra de CPF/e-mail e escolha um acesso temporário abaixo.</span>
                         </div>
+                        <!-- Acessos temporários (protótipo): estilo login salvo — filtrados pelo que foi digitado -->
+                        <div id="login-sugestoes" class="hidden mt-2 space-y-1.5"></div>
                     </div>
 
                     <!-- Bloco de senha -->
@@ -110,7 +123,7 @@
                             </span>
                             <input type="password" id="login-password" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-slate-100 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none">
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-2 leading-snug italic" id="login-hint">Usuarios de teste — CPF 1, 2 ou 3 com senha correspondente</p>
+                        <p class="text-[10px] text-slate-400 mt-2 leading-snug italic" id="login-hint">Acesso temporário de protótipo — escolha abaixo ou digite para filtrar</p>
                     </div>
 
                     <!-- Botão de Login -->
@@ -227,10 +240,10 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 p-6 rounded-3xl border border-slate-850 shadow-xl">
                     <div class="space-y-1">
                         <h3 class="text-xl font-black text-white flex items-center gap-2">
-                            <span>Resumo Financeiro e Operacional</span>
+                            <span id="dash-titulo">Resumo Financeiro e Operacional</span>
                             <span class="text-xs font-bold bg-brand-lime/10 text-brand-lime border border-brand-lime/20 px-2.5 py-0.5 rounded-full">Ao Vivo</span>
                         </h3>
-                        <p class="text-xs text-slate-400">Acompanhamento consolidado de vendas, atendimentos e fluxo de clínica.</p>
+                        <p id="dash-subtitulo" class="text-xs text-slate-400">Acompanhamento consolidado de vendas, atendimentos e fluxo de clínica.</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <button id="btn-gerar-relatorios-dashboard" onclick="abrirModalGerarRelatorios()" class="px-4 py-2.5 bg-gradient-to-r from-brand-purple to-brand-blue hover:opacity-90 font-bold text-xs text-white rounded-xl shadow-md flex items-center gap-2">
@@ -245,27 +258,6 @@
                     </div>
                 </div>
 
-                <!-- PAINEL DO VETERINÁRIO (Fase 5): visível só p/ role veterinario — ver atualizarDashboardPorPerfil() -->
-                <div id="painel-vet-hoje" class="hidden space-y-4">
-                    <div class="bg-slate-950 p-6 rounded-3xl border border-slate-850 shadow-xl space-y-1">
-                        <h3 class="text-xl font-black text-white flex items-center gap-2">
-                            <span>Meus agendamentos de hoje</span>
-                            <span class="text-xs font-bold bg-brand-lime/10 text-brand-lime border border-brand-lime/20 px-2.5 py-0.5 rounded-full">Ao Vivo</span>
-                        </h3>
-                        <p class="text-xs text-slate-400">Hora · pet · tutor · serviço · status do dia atual.</p>
-                        <div class="flex flex-wrap gap-2 pt-2">
-                            <span id="vet-hoje-total" class="text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 px-3 py-1.5 rounded-xl">0 atendimentos</span>
-                            <span id="vet-hoje-confirmados" class="text-xs font-bold bg-brand-lime/10 border border-brand-lime/20 text-brand-lime px-3 py-1.5 rounded-xl">0 confirmados</span>
-                            <span id="vet-hoje-pendentes" class="text-xs font-bold bg-brand-yellow/10 border border-brand-yellow/20 text-brand-yellow px-3 py-1.5 rounded-xl">0 pendentes</span>
-                        </div>
-                    </div>
-                    <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
-                        <div id="lista-vet-hoje" class="divide-y divide-slate-800/50"></div>
-                    </div>
-                </div>
-
-                <!-- PAINEL FINANCEIRO (admin/funcionário) -->
-                <div id="painel-financeiro" class="space-y-6">
                 <!-- KPIs Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div id="card-faturamento" class="bg-slate-950 p-5 rounded-2xl border border-slate-850 space-y-2 relative overflow-hidden">
@@ -274,7 +266,7 @@
                             <i data-lucide="dollar-sign" class="w-5 h-5 text-brand-lime"></i>
                         </div>
                         <div id="kpi-faturamento" class="text-2xl font-black text-white">R$ 12.850,00</div>
-                        <span class="text-[11px] text-brand-lime font-bold flex items-center gap-1">
+                        <span id="kpi-faturamento-nota" class="text-[11px] text-brand-lime font-bold flex items-center gap-1">
                             <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +18.4% vs mês anterior
                         </span>
                     </div>
@@ -304,7 +296,7 @@
                 </div>
 
                 <!-- Gráficos -->
-                <div class="grid grid-cols-1 gap-6">
+                <div id="grafico-receita-card" class="grid grid-cols-1 gap-6">
                     <div class="bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-4">
                         <div class="flex items-center justify-between">
                             <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
@@ -317,6 +309,29 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Bloco do veterinário (visível só p/ vet): próxima consulta + consultas/vacinas do dia -->
+                <div id="bloco-vet" class="hidden space-y-6">
+                    <div class="bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-3">
+                        <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                            <i data-lucide="stethoscope" class="w-4 h-4 text-brand-lime"></i>
+                            <span>Próxima Consulta</span>
+                        </h4>
+                        <div id="prox-consulta-conteudo" class="space-y-1">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+                    <div class="bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                                <i data-lucide="bar-chart-4" class="w-4 h-4 text-brand-blue"></i>
+                                <span>Consultas × Vacinações de Hoje</span>
+                            </h4>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="consultasChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -339,43 +354,81 @@
                     </div>
                 </div>
 
-                <!-- Filtros por Status -->
-                <div class="flex items-center justify-between gap-2 overflow-x-auto pb-2">
-                    <div class="flex items-center gap-2">
+                <!-- Filtros por Status (valem p/ Ativos e Expirados) -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-2">
+                    <div class="flex items-center gap-2 overflow-x-auto">
                         <button id="filter-all" onclick="filtrarAgendamentos('todos')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white border border-slate-700">Todos</button>
                         <button id="filter-pendente" onclick="filtrarAgendamentos('pendente')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white">Pendentes</button>
                         <button id="filter-confirmado" onclick="filtrarAgendamentos('confirmado')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white">Confirmados</button>
+                        <button id="filter-concluido" onclick="filtrarAgendamentos('concluido')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white">Concluídos</button>
                         <button id="filter-cancelado" onclick="filtrarAgendamentos('cancelado')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-400 border border-slate-850 hover:text-white">Cancelados</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <select id="filtro-data-ag" onchange="filtrarAgendamentosData(this.value)" class="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3 py-2 rounded-xl focus:outline-none" title="Filtrar por período">
-                            <option value="todos">Período: Todos os dias</option>
-                            <option value="hoje">Período: Hoje</option>
-                            <option value="proximos7">Período: Hoje e futuros</option>
-                            <option value="passados">Período: Passados</option>
-                        </select>
-                        <span id="agendamento-counter" class="text-xs text-slate-400 font-bold">Exibindo 4 compromissos</span>
+                    <span id="agendamento-counter" class="text-xs text-slate-400 font-bold">Exibindo 4 compromissos</span>
+                </div>
+
+                <!-- Tabela: Ativos -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2 px-1">
+                        <i data-lucide="calendar-check" class="w-4 h-4 text-brand-lime"></i>
+                        <span>Ativos</span>
+                    </h4>
+                    <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider font-extrabold border-b border-slate-800">
+                                    <tr>
+                                        <th class="py-4 px-6">Paciente & Tutor</th>
+                                        <th class="py-4 px-6">Serviço Solicitado</th>
+                                        <th class="py-4 px-6">Data & Horário</th>
+                                        <th class="py-4 px-6">Valor Registrado</th>
+                                        <th class="py-4 px-6">Status</th>
+                                        <th class="py-4 px-6 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agendamentos-table-body" class="divide-y divide-slate-850">
+                                    <!-- Preenchido dinamicamente via JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tabela de Agendamentos -->
-                <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider font-extrabold border-b border-slate-800">
-                                <tr>
-                                    <th class="py-4 px-6">Paciente & Tutor</th>
-                                    <th class="py-4 px-6">Serviço Solicitado</th>
-                                    <th class="py-4 px-6">Data & Horário</th>
-                                    <th class="py-4 px-6">Valor Registrado</th>
-                                    <th class="py-4 px-6">Status</th>
-                                    <th class="py-4 px-6 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="agendamentos-table-body" class="divide-y divide-slate-850">
-                                <!-- Preenchido dinamicamente via JS -->
-                            </tbody>
-                        </table>
+                <!-- Tabela: Expirados (histórico abaixo, agrupado por data) -->
+                <div class="space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+                        <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4 text-slate-400"></i>
+                            <span>Expirados — histórico</span>
+                        </h4>
+                        <div class="flex items-center gap-2">
+                            <select id="pesquisa-mes-sel" title="Escolher mês" class="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3 py-2 rounded-xl focus:outline-none"></select>
+                            <select id="pesquisa-ano-sel" title="Escolher ano" class="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 px-3 py-2 rounded-xl focus:outline-none"></select>
+                            <button id="btn-pesquisar-mes" onclick="pesquisarMesExpirados()" class="px-3 py-2 bg-brand-blue text-xs font-bold text-white rounded-xl">Buscar</button>
+                            <button id="btn-limpar-pesquisa-mes" onclick="limparPesquisaMesExpirados()" class="hidden px-3 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Limpar</button>
+                            <span id="expirados-counter" class="text-xs text-slate-400 font-bold">Exibindo 0 no histórico</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950 rounded-3xl border border-slate-850 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider font-extrabold border-b border-slate-800">
+                                    <tr>
+                                        <th class="py-4 px-6">Paciente & Tutor</th>
+                                        <th class="py-4 px-6">Serviço Solicitado</th>
+                                        <th class="py-4 px-6">Data & Horário</th>
+                                        <th class="py-4 px-6">Valor Registrado</th>
+                                        <th class="py-4 px-6">Status</th>
+                                        <th class="py-4 px-6 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expirados-table-body" class="divide-y divide-slate-850">
+                                    <!-- Preenchido dinamicamente via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button id="btn-expandir-expirados" onclick="alternarExpiradosExpandido()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-200 hover:text-white rounded-xl flex items-center gap-2">Carregar mais antigas</button>
                     </div>
                 </div>
             </section>
@@ -402,6 +455,24 @@
                 <div id="tutores-grid" class="grid grid-cols-1 gap-6">
                     <!-- Preenchido dinamicamente via JS -->
                 </div>
+
+                <!-- Gerenciar tipos de raça (funcionário e admin; vet só lista nos selects) -->
+                <div id="racas-card-gerenciar" class="hidden bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-3">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div>
+                            <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                                <i data-lucide="tags" class="w-4 h-4 text-brand-lime"></i>
+                                <span>Tipos de Raça por Espécie</span>
+                                <span id="tipos-raca-count-card" class="text-[10px] font-bold text-slate-400">0 raças</span>
+                            </h4>
+                            <p class="text-xs text-slate-400 mt-1">Catálogo usado nas listas de raça do cadastro de pets.</p>
+                        </div>
+                        <button id="btn-gerenciar-tipos-raca" onclick="abrirModalTiposRaca()" class="px-4 py-2.5 bg-gradient-to-r from-brand-lime/20 to-brand-lime/40 border border-brand-lime/50 hover:opacity-90 text-xs font-bold text-brand-lime rounded-xl flex items-center gap-2 shrink-0">
+                            <i data-lucide="settings-2" class="w-4 h-4"></i>
+                            <span>Gerenciar tipos de raça</span>
+                        </button>
+                    </div>
+                </div>
             </section>
 
             <!-- TAB 4: MÓDULO CLÍNICO -->
@@ -409,21 +480,53 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 p-6 rounded-3xl border border-slate-850">
                     <div>
                         <h3 class="text-xl font-black text-white">Atendimento Clínico & Documentos Médicos</h3>
-                        <p class="text-xs text-slate-400">Gestão completa de Prescrições, Laudos Diagnósticos e Guias de Encaminhamento.</p>
+                        <p class="text-xs text-slate-400">Gestão completa de Prescrições e Guias de Encaminhamento.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <button onclick="prepararNovoDocumentoClinico('receita')" class="btn-incluir-doc-clinico px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-brand-lime text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5">
                             <i data-lucide="file-plus" class="w-4 h-4 text-brand-lime"></i>
                             <span>Incluir Receita</span>
                         </button>
-                        <button onclick="prepararNovoDocumentoClinico('laudo')" class="btn-incluir-doc-clinico px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-brand-blue text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5">
-                            <i data-lucide="file-search" class="w-4 h-4 text-brand-blue"></i>
-                            <span>Incluir Laudo</span>
-                        </button>
                         <button onclick="prepararNovoDocumentoClinico('guia')" class="btn-incluir-doc-clinico px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-brand-pink text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5">
                             <i data-lucide="file-check" class="w-4 h-4 text-brand-pink"></i>
                             <span>Incluir Guia</span>
                         </button>
+                        <button onclick="document.getElementById('input-upload-anexo').click()" class="btn-incluir-doc-clinico px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-brand-blue text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5" title="Anexar exames e documentos (PDF, JPG, PNG)">
+                            <i data-lucide="paperclip" class="w-4 h-4 text-brand-blue"></i>
+                            <span>Anexar Documento</span>
+                        </button>
+                        <input type="file" id="input-upload-anexo" class="hidden" multiple accept=".pdf,.jpg,.jpeg,.png" onchange="lidarUploadAnexos(event)">
+                    </div>
+                </div>
+
+                <!-- Visão restrita do Módulo Clínico (admin e veterinário):
+                     só gerencia tipos de vacina. -->
+                <div id="tipos-vacina-card-func" class="hidden bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-3">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div>
+                            <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                                <i data-lucide="syringe" class="w-4 h-4 text-brand-blue"></i>
+                                <span>Tipos de Vacina</span>
+                                <span id="tipos-vacina-count-card" class="text-[10px] font-bold text-slate-400">0 tipos</span>
+                            </h4>
+                            <p class="text-xs text-slate-400 mt-1">Cadastre os tipos usados nos agendamentos e registros de imunização.</p>
+                        </div>
+                        <button id="btn-gerenciar-tipos-vacina-func" onclick="abrirModalTiposVacina()" class="px-4 py-2.5 bg-gradient-to-r from-brand-blue to-brand-purple hover:opacity-90 font-bold text-xs text-white rounded-xl shadow-md flex items-center gap-2 shrink-0">
+                            <i data-lucide="settings-2" class="w-4 h-4"></i>
+                            <span>Gerenciar tipos de vacina</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Anexos do módulo clínico (protótipo: memória — some ao recarregar) -->
+                <div id="anexos-card" class="bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-3">
+                    <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                        <i data-lucide="folder-open" class="w-4 h-4 text-brand-blue"></i>
+                        <span>Documentos Anexados</span>
+                        <span id="anexos-count" class="text-[10px] font-bold text-slate-400">0 arquivos</span>
+                    </h4>
+                    <div id="lista-anexos" class="space-y-2">
+                        <p class="text-xs text-slate-500 italic">Nenhum documento anexado.</p>
                     </div>
                 </div>
 
@@ -434,7 +537,7 @@
                 </div>
 
                 <div id="clinica-allowed-content" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Formulário de Prontuário / Laudo / Receita / Guia -->
+                    <!-- Formulário de Receita / Guia -->
                     <div id="clinica-form-coluna" class="lg:col-span-1 bg-slate-950 p-6 rounded-3xl border border-slate-850 space-y-4">
                         <h4 id="clinica-form-title" class="font-bold text-slate-100 text-sm flex items-center gap-2">
                             <i data-lucide="file-plus" class="w-4 h-4 text-brand-lime"></i>
@@ -444,9 +547,15 @@
                         <form onsubmit="salvarRegistroClinico(event)" class="space-y-3">
                             <input type="hidden" id="clinica-edit-id" value="">
                             <div>
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Tutor (por CPF)</label>
+                                <select id="clinica-tutor-select" onchange="filtrarPetsClinicaPorTutor()" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                                    <option value="">Carregando tutores...</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Selecione o Paciente</label>
                                 <select id="clinica-pet-select" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
-                                    <option value="">Carregando pets...</option>
+                                    <option value="">Selecione o tutor primeiro...</option>
                                 </select>
                             </div>
 
@@ -454,10 +563,14 @@
                                 <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Tipo de Documento</label>
                                 <select id="clinica-tipo" onchange="atualizarLabelDocumento()" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
                                     <option value="receita">Receita Médica</option>
-                                    <option value="laudo">Laudo Diagnóstico</option>
                                     <option value="guia">Guia de Encaminhamento / Exame</option>
                                     <option value="vacina">Registro de Imunização</option>
                                 </select>
+                            </div>
+
+                            <div id="clinica-vacina-bloco" class="hidden">
+                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Tipo de vacinação</label>
+                                <select id="clinica-vacina-tipo" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
                             </div>
 
                             <div>
@@ -485,7 +598,7 @@
                         <div class="flex items-center justify-between">
                             <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2">
                                 <i data-lucide="history" class="w-4 h-4 text-brand-blue"></i>
-                                <span>Laudos, Receitas e Guias Emitidos</span>
+                                <span>Receitas e Guias Emitidos</span>
                             </h4>
                             <span id="prontuario-count" class="text-xs text-slate-400 font-bold">0 registros</span>
                         </div>
@@ -698,17 +811,34 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Espécie</label>
-                        <select id="edit-pet-especie" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
-                            <option value="Cachorro">Cachorro</option>
-                            <option value="Gato">Gato</option>
-                            <option value="Ave">Ave</option>
+                        <select id="edit-pet-especie" onchange="popularRacasPet('edit-')" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                            <option value="Canino">Canino</option>
+                            <option value="Felino">Felino</option>
+                            <option value="Equino">Equino</option>
+                            <option value="Bovino">Bovino</option>
+                            <option value="Suíno">Suíno</option>
+                            <option value="Ovino">Ovino</option>
                             <option value="Outro">Outro</option>
                         </select>
                     </div>
                 </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Raça</label>
+                        <select id="edit-pet-raca" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Sexo</label>
+                        <select id="edit-pet-sexo" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                            <option value="">Selecione...</option>
+                            <option value="Macho">Macho</option>
+                            <option value="Fêmea">Fêmea</option>
+                        </select>
+                    </div>
+                </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Raça</label>
-                    <input type="text" id="edit-pet-raca" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Peso (kg) — opcional</label>
+                    <input type="number" id="edit-pet-peso" min="0" step="0.01" placeholder="Ex: 12.5" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Comportamento</label>
@@ -745,7 +875,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Telefone</label>
-                        <input type="text" id="tutor-tel" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                        <input type="text" id="tutor-tel" required maxlength="15" placeholder="(11) 99999-9999" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
                     </div>
                 </div>
                 <div>
@@ -784,7 +914,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Telefone</label>
-                        <input type="text" id="edit-tutor-tel" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                        <input type="text" id="edit-tutor-tel" required maxlength="15" placeholder="(11) 99999-9999" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
                     </div>
                 </div>
                 <div>
@@ -822,17 +952,34 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Espécie</label>
-                        <select id="pet-especie" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
-                            <option value="Cachorro">Cachorro</option>
-                            <option value="Gato">Gato</option>
-                            <option value="Ave">Ave</option>
+                        <select id="pet-especie" onchange="popularRacasPet('')" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                            <option value="Canino">Canino</option>
+                            <option value="Felino">Felino</option>
+                            <option value="Equino">Equino</option>
+                            <option value="Bovino">Bovino</option>
+                            <option value="Suíno">Suíno</option>
+                            <option value="Ovino">Ovino</option>
                             <option value="Outro">Outro</option>
                         </select>
                     </div>
                 </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Raça</label>
+                        <select id="pet-raca" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Sexo</label>
+                        <select id="pet-sexo" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                            <option value="">Selecione...</option>
+                            <option value="Macho">Macho</option>
+                            <option value="Fêmea">Fêmea</option>
+                        </select>
+                    </div>
+                </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Raça</label>
-                    <input type="text" id="pet-raca" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Peso (kg) — opcional</label>
+                    <input type="number" id="pet-peso" min="0" step="0.01" placeholder="Ex: 12.5" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Comportamento</label>
@@ -871,7 +1018,15 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Serviço</label>
-                    <input type="text" id="agend-tipo" required placeholder="Ex: Consulta Veterinária, Vacinação..." class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    <input type="text" id="agend-tipo" required placeholder="Ex: Consulta Veterinária, Vacinação..." oninput="atualizarVisibilidadeVacinaAg()" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div id="agend-vacina-bloco" class="hidden">
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Tipo de vacinação</label>
+                    <select id="agend-vacina-tipo" onchange="atualizarVisibilidadeVacinaAg()" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
+                    <div id="agend-vacina-novo-bloco" class="hidden mt-2">
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Novo tipo (opcional — adiciona ao catálogo)</label>
+                        <input type="text" id="agend-vacina-novo-nome" placeholder="Ex: V10 importada — vazio mantém 'Outro'" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
                 </div>
                 <div class="grid grid-cols-3 gap-3">
                     <div>
@@ -880,7 +1035,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Hora</label>
-                        <input type="time" id="agend-hora" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                        <input type="time" id="agend-hora" required min="07:00" max="19:00" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Valor (R$)</label>
@@ -989,7 +1144,7 @@
                     <select id="relatorio-tipo" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
                         <option value="financeiro">Relatório Financeiro Completo</option>
                         <option value="agendamentos">Relatório de Agendamentos & Consultas</option>
-                        <option value="laudos">Relatório de Laudos e Receituários Emitidos</option>
+                        <option value="receitas">Relatório de Receitas e Guias Emitidas</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -1031,7 +1186,7 @@
                 <!-- O QUE: Campo de e-mail obrigatório para auth empresarial.
                      PORQUÊ: E-mail serve como alternativa de login ao CPF.
                      DEMO (mock): Input HTML simples; validacao em JS (validarEmail).
-                     TODO [DB] UNIQUE constraint no campo email da tabela users. -->
+                     TODO [INTEGRAÇÃO SUPABASE - DB SQL] UNIQUE constraint no campo email da tabela users. -->
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase mb-1">E-mail</label>
                     <input type="email" id="user-new-email" placeholder="usuario@dominio.com" required class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
@@ -1052,9 +1207,74 @@
         </div>
     </div>
 
-    <!-- Modal Universal de Impressão (Receita, Laudo, Guia) -->
+    <!-- Modal: Gerenciar Tipos de Vacina (ROADMAP §1 item 7 — restrito ao funcionário) -->
+    <div id="modal-tipos-vacina" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-md p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 id="modal-tipos-vacina-titulo" class="font-black text-white text-base">Gerenciar Tipos de Vacina</h4>
+                <button onclick="fecharModalTiposVacina()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <p class="text-xs text-slate-400">Visão restrita: admin e veterinário criam/editem/excluem.</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-400 uppercase">Tipos cadastrados</span>
+                <span id="tipos-vacina-count" class="text-xs text-slate-400 font-bold">0 tipos</span>
+            </div>
+            <div id="lista-tipos-vacina" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1"></div>
+            <form onsubmit="salvarTipoVacina(event)" class="space-y-3">
+                <input type="hidden" id="edit-tipo-vacina-idx" value="">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nome do tipo</label>
+                    <input type="text" id="input-tipo-vacina-nome" required placeholder="Ex: Antirrábica" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" id="btn-cancelar-edit-tipo-vacina" onclick="cancelarEdicaoTipoVacina()" class="hidden px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar edição</button>
+                    <button type="button" onclick="fecharModalTiposVacina()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Fechar</button>
+                    <button type="submit" id="btn-salvar-tipo-vacina" class="px-5 py-2 bg-brand-blue text-xs font-bold text-white rounded-xl">Adicionar vacina</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Gerenciar Tipos de Raça (funcionário e admin; vet só lista) -->
+    <div id="modal-tipos-raca" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-950 border border-slate-850 w-full max-w-md p-6 rounded-3xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 id="modal-tipos-raca-titulo" class="font-black text-white text-base">Gerenciar Tipos de Raça</h4>
+                <button onclick="fecharModalTiposRaca()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Espécie</label>
+                <select id="filtro-tipo-raca-especie" onchange="filtrarTiposRaca()" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-400 uppercase">Raças cadastradas</span>
+                <span id="tipos-raca-count" class="text-xs text-slate-400 font-bold">0 raças</span>
+            </div>
+            <div id="lista-tipos-raca" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1"></div>
+            <form onsubmit="salvarTipoRaca(event)" class="space-y-3">
+                <input type="hidden" id="edit-tipo-raca-idx" value="">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Espécie</label>
+                        <select id="select-tipo-raca-especie" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nome da raça</label>
+                        <input type="text" id="input-tipo-raca-nome" required placeholder="Ex: Poodle" class="w-full bg-slate-900 border border-slate-800 text-xs rounded-xl p-2.5 text-white focus:outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" id="btn-cancelar-edit-tipo-raca" onclick="cancelarEdicaoTipoRaca()" class="hidden px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Cancelar edição</button>
+                    <button type="button" onclick="fecharModalTiposRaca()" class="px-4 py-2 bg-slate-900 text-xs font-bold text-slate-300 rounded-xl">Fechar</button>
+                    <button type="submit" id="btn-salvar-tipo-raca" class="px-5 py-2 bg-brand-blue text-xs font-bold text-white rounded-xl">Adicionar raça</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Universal de Impressão (Receita, Guia) -->
     <div id="modal-impressao-documento" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-        <div class="bg-white text-slate-900 w-full max-w-2xl p-8 rounded-2xl shadow-2xl space-y-6 print-card">
+        <div id="doc-print-card" class="bg-white text-slate-900 w-full max-w-2xl p-8 rounded-2xl shadow-2xl space-y-6 print-card">
             <div class="flex items-center justify-between border-b pb-4 border-slate-200">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black">
@@ -1062,10 +1282,13 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-lg text-slate-900">CLÍNICA VETERINÁRIA DAYVET-GESTÃO</h3>
-                        <p class="text-xs text-slate-500">Dr. Douglas Ferreira - CRMV-SP 45678</p>
+                        <p class="text-xs text-slate-500"><span id="doc-vet-nome">Dr. Douglas Ferreira</span> - <span id="doc-vet-crmv">CRMV-SP 45678</span></p>
                     </div>
                 </div>
                 <div class="no-print flex gap-2">
+                    <span class="px-4 py-2 bg-amber-100 text-amber-800 font-bold text-xs rounded-xl flex items-center gap-2" title="Tela ilustrativa de protótipo: com banco de dados, aqui entram nome + CRMV do veterinário logado e assinatura digital.">
+                        DEMONSTRAÇÃO
+                    </span>
                     <button onclick="window.print()" class="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-xl flex items-center gap-2">
                         <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Documento
                     </button>
@@ -1091,8 +1314,8 @@
 
                 <div class="pt-8 text-center border-t border-slate-200 space-y-1">
                     <div class="w-48 border-b border-slate-800 mx-auto"></div>
-                    <p class="text-xs font-bold text-slate-800">Assinatura do Médico Veterinário Responsável</p>
-                    <p class="text-[10px] text-slate-500">CRMV-SP 45678</p>
+                    <p class="text-xs font-bold text-slate-800"><span id="doc-assinatura-nome">Dr. Douglas Ferreira</span> — Assinatura do Médico Veterinário Responsável</p>
+                    <p class="text-[10px] text-slate-500"><span id="doc-assinatura-crmv">CRMV-SP 45678</span> · ilustrativo (protótipo sem banco)</p>
                 </div>
             </div>
         </div>
@@ -1148,7 +1371,7 @@
                     <!-- O QUE: Indicadores visuais das regras de senha forte.
                          PORQUÊ: Feedback em tempo real para o usuario durante reset.
                          DEMO (mock): Regras atualizadas via JS (atualizarIndicadoresRegraSenha).
-                         TODO [DB] Mesma politica validada no backend com bcrypt. -->
+                         TODO [INTEGRAÇÃO SUPABASE - DB SQL] Mesma politica validada no backend com bcrypt. -->
                     <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1">
                         <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Regras de senha:</p>
                         <p class="text-[10px] text-slate-500" id="regra-tamanho"><span class="inline-block w-3 mr-1">&#9675;</span> Minimo de 8 caracteres</p>
@@ -1176,7 +1399,7 @@
          PORQUÊ: Usuarios novos recebem senha temporaria e devem trocar.
          DEMO (mock): Modal fullscreen sobre login; confirma login automatico.
          BUGFIX 2026-09-15: z-[60] em vez de z-50 — mesmo motivo do modal-recuperar-senha.
-         TODO [DB] Fluxo via email com token JWT + POST /api/users/:id/change-password. -->
+         TODO [INTEGRAÇÃO SUPABASE - DB SQL] Fluxo via email com token JWT + POST /api/users/:id/change-password. -->
     <div id="forcar-senha-etapa" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div class="flex items-center gap-3 mb-2">
